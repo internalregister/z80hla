@@ -6,6 +6,79 @@ A high-level assembler for Z80 CPUs.
 
 An assembler targeting Z80 CPUs with some high-level syntax that is translated into simple and direct assembly instructions.  
 
+Example of the syntax:
+```
+#define DEBUG
+#origin 0x0000
+
+jp main
+
+data byte [$-0x66]
+interrupt nmi()
+{
+}
+
+library MyLibrary
+{
+    struct MyStruct
+    {
+        byte x, y
+        union {
+            word full
+            struct {
+                byte low, high
+            } partial
+        } value
+    }
+
+    const OUT_CHAR = 0x1000
+
+    function func()
+    {
+        ld a, sizeof(my_array)
+        ld hl, my_array
+        do {
+            ld (hl), 1
+            inc hl
+            dec a
+        } while(nz)
+#ifdef DEBUG
+        ld a, length(my_array)
+        ld bc, OUT_CHAR
+        out (c), a
+#endif
+    }
+}
+
+#include "other_code.z80hla"
+
+function func()
+{
+    MyLibrary::func()
+}
+
+main:
+  func()
+  ld hl, my_struct_var.value.partial.low
+  ld (hl), 100
+  forever
+  {
+  }
+
+data byte sin_table from "sin_table.bin"
+
+#origin 0x8000
+#output_off
+
+data MyLibrary::MyStruct my_struct_var = {}
+library MyLibrary
+{
+    data byte my_array[100]
+}
+```
+
+[More extensive program written in Z80HLA](https://github.com/internalregister/z80hla/blob/master/examples/homebrew_console/minibreakout/minibreakout.z80hla)
+
 The idea is for the binary generated to be equally efficient as if written in pure assembly, but also having a few advantages (in my opinion), for example:
 * increase readability by not having as many labels to cope with loops and branching
 * having data well defined and with types (including structs and unions)

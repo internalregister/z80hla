@@ -1,27 +1,27 @@
 /*
-    Copyright (c) 2022, Sérgio Vieira <internalregister@gmail.com>
-    All rights reserved.
+	Copyright (c) 2022, Sérgio Vieira <internalregister@gmail.com>
+	All rights reserved.
 
-    Redistribution and use in source and binary forms, with or without
-    modification, are permitted provided that the following conditions are met:
+	Redistribution and use in source and binary forms, with or without
+	modification, are permitted provided that the following conditions are met:
 
-    1. Redistributions of source code must retain the above copyright notice, this
-    list of conditions and the following disclaimer.
+	1. Redistributions of source code must retain the above copyright notice, this
+	list of conditions and the following disclaimer.
 
-    2. Redistributions in binary form must reproduce the above copyright notice,
-    this list of conditions and the following disclaimer in the documentation
-    and/or other materials provided with the distribution.
+	2. Redistributions in binary form must reproduce the above copyright notice,
+	this list of conditions and the following disclaimer in the documentation
+	and/or other materials provided with the distribution.
 
-    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-    SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+	THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+	AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+	IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+	DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+	FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+	DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+	SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+	CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+	OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+	OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
 #origin 0x2100
@@ -33,45 +33,45 @@
 
 library Console
 {
-    const OUT_RS232 = 0x00
-    const OUT_RS232_BYTE = 0x01
-    const OUT_NAME = 0x0A
-    const IN_SD_INIT = 0x0A
-    const IN_SD_OPEN_DIR = 0x0B
-    const IN_SD_READ_CONTENTS = 0x10
-    const IN_SD_READ_CONTENT_NAME = 0x11
-    const IN_SD_READ_CONTENT_ATTRIBUTES = 0x12
-    const IN_SD_GOTO_CONTENT = 0x15
-    const IN_SD_OPEN_CONTENT_FILE = 0x20
-    const IN_SD_CLOSE_FILE = 0x21
-    const IN_SD_END_OF_FILE = 0x22
-    const IN_SD_READ_FILE = 0x23
+	const OUT_RS232 = 0x00
+	const OUT_RS232_BYTE = 0x01
+	const OUT_NAME = 0x0A
+	const IN_SD_INIT = 0x0A
+	const IN_SD_OPEN_DIR = 0x0B
+	const IN_SD_READ_CONTENTS = 0x10
+	const IN_SD_READ_CONTENT_NAME = 0x11
+	const IN_SD_READ_CONTENT_ATTRIBUTES = 0x12
+	const IN_SD_GOTO_CONTENT = 0x15
+	const IN_SD_OPEN_CONTENT_FILE = 0x20
+	const IN_SD_CLOSE_FILE = 0x21
+	const IN_SD_END_OF_FILE = 0x22
+	const IN_SD_READ_FILE = 0x23
 
-    const IN_RS232 = 0x00
-    const IN_PS2 = 0x01
-    const IN_JOY1_SEL0 = 0x02
-    const IN_JOY1_SEL1 = 0x03
-    const IN_JOY2_SEL0 = 0x04
-    const IN_JOY2_SEL1 = 0x05
+	const IN_RS232 = 0x00
+	const IN_PS2 = 0x01
+	const IN_JOY1_SEL0 = 0x02
+	const IN_JOY1_SEL1 = 0x03
+	const IN_JOY2_SEL0 = 0x04
+	const IN_JOY2_SEL1 = 0x05
 
 
-    const PPU_SCROLL_X = 0x1001
-    const PPU_SCROLL_Y = 0x1002
-    const PPU_SCROLL_PAGES = 0x1003
+	const PPU_SCROLL_X = 0x1001
+	const PPU_SCROLL_Y = 0x1002
+	const PPU_SCROLL_PAGES = 0x1003
 
-    const PPU_SPRITES = 0x1004
+	const PPU_SPRITES = 0x1004
 
-    const PPU_NAME_TABLE_1 = 0x1144
-    const PPU_NAME_TABLE_2 = 0x13E4
-    const PPU_NAME_TABLE_3 = 0x1684
-    const PPU_NAME_TABLE_4 = 0x1924
+	const PPU_NAME_TABLE_1 = 0x1144
+	const PPU_NAME_TABLE_2 = 0x13E4
+	const PPU_NAME_TABLE_3 = 0x1684
+	const PPU_NAME_TABLE_4 = 0x1924
 
-    const PPU_TILE_TABLE_1 = 0x1BC4
-    const PPU_TILE_TABLE_2 = 0x1C6C
-    const PPU_TILE_TABLE_3 = 0x1D14
-    const PPU_TILE_TABLE_4 = 0x1DBC
+	const PPU_TILE_TABLE_1 = 0x1BC4
+	const PPU_TILE_TABLE_2 = 0x1C6C
+	const PPU_TILE_TABLE_3 = 0x1D14
+	const PPU_TILE_TABLE_4 = 0x1DBC
 
-    const PPU_OVERLAY = 0x1E64
+	const PPU_OVERLAY = 0x1E64
 }
 
 ;----------------------------------
@@ -101,24 +101,24 @@ function programNMI()
 ;	Init
 	ld a, (initialized)
 	cp 0
-    if (z)
-    {
-        initNameTables()
-        initSprites()
+	if (z)
+	{
+		initNameTables()
+		initSprites()
 
-        ld hl, initialized
-        ld (hl), 1
-    }
+		ld hl, initialized
+		ld (hl), 1
+	}
 	getJoyInfo()
 	checkPause()
 
 	ld a, (paused)
 	cp 1
-    if (nz)
-    {
-        movePadBall()
-        handleTimeCount()
-    }
+	if (nz)
+	{
+		movePadBall()
+		handleTimeCount()
+	}
 	setSprites()
 }
 
@@ -138,39 +138,39 @@ function initNameTables()
 	ld hl, currentTile.x
 	ld (hl), 0
 
-    do
-    {
-        ld hl, currentTile.y
-        ld (hl), 0
+	do
+	{
+		ld hl, currentTile.y
+		ld (hl), 0
 
-        do
-        {
-            ld hl, (currentNameTableSourcePos)
-            ld a, (hl)
-            ld bc, (currentNameTablePos)
-            out (c), a
+		do
+		{
+			ld hl, (currentNameTableSourcePos)
+			ld a, (hl)
+			ld bc, (currentNameTablePos)
+			out (c), a
 
-            ld hl, (currentNameTableSourcePos)
-            inc hl
-            ld (currentNameTableSourcePos), hl
-            
-            ld hl, (currentNameTablePos)
-            inc hl
-            ld (currentNameTablePos), hl
+			ld hl, (currentNameTableSourcePos)
+			inc hl
+			ld (currentNameTableSourcePos), hl
+			
+			ld hl, (currentNameTablePos)
+			inc hl
+			ld (currentNameTablePos), hl
 
-            ld hl, currentTile.y
-            ld a, (hl)
-            inc a
-            ld (hl), a
-            cp 28
-        } while (nz)
+			ld hl, currentTile.y
+			ld a, (hl)
+			inc a
+			ld (hl), a
+			cp 28
+		} while (nz)
 
-        ld hl, currentTile.x
-        ld a, (hl)
-        inc a
-        ld (hl), a
-        cp 24        
-    } while (nz)
+		ld hl, currentTile.x
+		ld a, (hl)
+		inc a
+		ld (hl), a
+		cp 24		
+	} while (nz)
 }
 
 ;----------------------------------
@@ -182,27 +182,27 @@ function initSprites()
 	ld (hl), 0
 
 	ld bc, Console::PPU_SPRITES
-    do
-    {
-        ld a, 0
-        out (c), a
-        inc bc
-        out (c), a
-        inc bc
-        out (c), a
-        inc bc
-        out (c), a
-        inc bc
-        out (c), a
+	do
+	{
+		ld a, 0
+		out (c), a
+		inc bc
+		out (c), a
+		inc bc
+		out (c), a
+		inc bc
+		out (c), a
+		inc bc
+		out (c), a
 
-        inc bc
+		inc bc
 
-        ld hl, currentSprite
-        ld a, (hl)
-        inc a
-        ld (hl), a
-        cp 64
-    } while(nz)	
+		ld hl, currentSprite
+		ld a, (hl)
+		inc a
+		ld (hl), a
+		cp 64
+	} while(nz)	
 }
 
 ;----------------------------------
@@ -322,44 +322,44 @@ function checkPause()
 	ld a, (joyInfo)
 	and 16 ; Start
 	cp 16
-    if (nz)
-    {
-        ld a, (startOff)
-        cp 1
-        if (z)
-        {
-            ld a, (paused)
-            xor 1
-            ld (paused), a
-            cp 0
-            if (z)
-            {
-                ld a, (reset)
-                cp 1
-                if (z)
-                {
-                    ld a, 0
-                    ld (reset), a
+	if (nz)
+	{
+		ld a, (startOff)
+		cp 1
+		if (z)
+		{
+			ld a, (paused)
+			xor 1
+			ld (paused), a
+			cp 0
+			if (z)
+			{
+				ld a, (reset)
+				cp 1
+				if (z)
+				{
+					ld a, 0
+					ld (reset), a
 
-                    fullReset()
-                    jr checkPauseOff
-                }
-            }
-            showPause()
-        }
-    }
+					fullReset()
+					jr checkPauseOff
+				}
+			}
+			showPause()
+		}
+	}
 
 checkPauseOff:
 	ld a, (joyInfo)
 	and 16 ; Start
 	cp 16
-    if (nz)
-    {
-        ld a, 0
-        ld (startOff), a
+	if (nz)
+	{
+		ld a, 0
+		ld (startOff), a
 
-        ret
-    }
+		ret
+	}
 	ld a, 1
 	ld (startOff), a
 }
@@ -375,19 +375,19 @@ function showText()
 	ld bc, Console::PPU_NAME_TABLE_1 + 288
 	ld a, 0
 	ld (loopTemp), a
-    do
-    {
-        ld a, (hl)
-        out (c), a
+	do
+	{
+		ld a, (hl)
+		out (c), a
 
-        inc bc
-        inc hl
+		inc bc
+		inc hl
 
-        ld a, (loopTemp)
-        inc a
-        ld (loopTemp), a
-        cp 11
-    } while(nz)
+		ld a, (loopTemp)
+		inc a
+		ld (loopTemp), a
+		cp 11
+	} while(nz)
 }
 
 
@@ -399,26 +399,26 @@ function showPause()
 {
 	ld a, (paused)
 	cp 1
-    if (z)
-    {
-        ld hl, pausedText
-        showText()
+	if (z)
+	{
+		ld hl, pausedText
+		showText()
 
-        ret
-    }
+		ret
+	}
 
 	ld bc, Console::PPU_NAME_TABLE_1 + 288
 	ld d, 0
-    do
-    {
-        ld a, 0xFE
-        out (c), a
+	do
+	{
+		ld a, 0xFE
+		out (c), a
 
-        inc bc
-        inc d
-        ld a, d
-        cp 11
-    } while(nz)
+		inc bc
+		inc d
+		ld a, d
+		cp 11
+	} while(nz)
 }
 
 ;----------------------------------
@@ -434,37 +434,37 @@ function movePadBall()
 	ld a, (hl)
 	and 1
 	cp 1 ; Left
-    if (nz)
-    {
-        ld hl, padPosition
-        ld a, (hl)
-        sub 5
-        ld (hl), a
-        cp PAD_MIN_X
-        if (c)
-        {
-            ld (hl), PAD_MIN_X
-        }
-    }
-    else
-    {
-        ld hl, joyInfo
-        ld a, (hl)
-        and 2
-        cp 2 ; Right
-        if (nz)
-        {
-            ld hl, padPosition
-            ld a, (hl)
-            add a, 5
-            ld (hl), a
-            cp PAD_MAX_X
-            if (nc)
-            {
-                ld (hl), PAD_MAX_X
-            }
-        }
-    }
+	if (nz)
+	{
+		ld hl, padPosition
+		ld a, (hl)
+		sub 5
+		ld (hl), a
+		cp PAD_MIN_X
+		if (c)
+		{
+			ld (hl), PAD_MIN_X
+		}
+	}
+	else
+	{
+		ld hl, joyInfo
+		ld a, (hl)
+		and 2
+		cp 2 ; Right
+		if (nz)
+		{
+			ld hl, padPosition
+			ld a, (hl)
+			add a, 5
+			ld (hl), a
+			cp PAD_MAX_X
+			if (nc)
+			{
+				ld (hl), PAD_MAX_X
+			}
+		}
+	}
 
 	; Move ball
 
@@ -472,221 +472,221 @@ function movePadBall()
 	ld b, a
 	ld a, (ballDirection.x)
 	cp 0
-    if (z)
-    {
-        ld a, (ballPosition.x)
-        add a, b
-        ld (ballPosition.x), a
-    }
-    else
-    {	
-        ld a, (ballPosition.x)
-        sub b
-        ld (ballPosition.x), a
-    }
+	if (z)
+	{
+		ld a, (ballPosition.x)
+		add a, b
+		ld (ballPosition.x), a
+	}
+	else
+	{	
+		ld a, (ballPosition.x)
+		sub b
+		ld (ballPosition.x), a
+	}
 
 	ld a, (ballVelocity.y)
 	ld b, a
 	ld a, (ballDirection.y)
 	cp 0
-    if (z)
-    {
-        ld a, (ballPosition.y)
-        add a, b
-        ld (ballPosition.y), a
-    }
+	if (z)
+	{
+		ld a, (ballPosition.y)
+		add a, b
+		ld (ballPosition.y), a
+	}
 	else
-    {
-        ld a, (ballPosition.y)
-        sub b
-        ld (ballPosition.y), a
-    }
+	{
+		ld a, (ballPosition.y)
+		sub b
+		ld (ballPosition.y), a
+	}
 
 	; Collision Walls
 
 	ld a, (ballPosition.x)
 	cp 39
-    if (c)
-    {
-        ld a, 39
-        ld (ballPosition.x), a
-        ld a, (ballDirection.x)
-        xor 1
-        ld (ballDirection.x), a	
-    }
-    else
-    {        
-        ld a, (ballPosition.x)
-        cp 242
-        if (nc)
-        {
-            ld a, 242
-            ld (ballPosition.x), a
-            ld a, (ballDirection.x)
-            xor 1
-            ld (ballDirection.x), a
-        }
-    }
+	if (c)
+	{
+		ld a, 39
+		ld (ballPosition.x), a
+		ld a, (ballDirection.x)
+		xor 1
+		ld (ballDirection.x), a	
+	}
+	else
+	{		
+		ld a, (ballPosition.x)
+		cp 242
+		if (nc)
+		{
+			ld a, 242
+			ld (ballPosition.x), a
+			ld a, (ballDirection.x)
+			xor 1
+			ld (ballDirection.x), a
+		}
+	}
 
 	ld a, (ballPosition.y)
 	cp 47
-    if (c)
-    {
-        ld a, 47
-        ld (ballPosition.y), a
-        ld a, (ballDirection.y)
-        xor 1
-        ld (ballDirection.y), a
-    }
-    else
-    {
-        ld a, (ballPosition.y)
-        cp 215
-        if (nc)
-        {
-            lifeLost()
-            ret
-        }
-    }
+	if (c)
+	{
+		ld a, 47
+		ld (ballPosition.y), a
+		ld a, (ballDirection.y)
+		xor 1
+		ld (ballDirection.y), a
+	}
+	else
+	{
+		ld a, (ballPosition.y)
+		cp 215
+		if (nc)
+		{
+			lifeLost()
+			ret
+		}
+	}
 
 	; Collision Pad
 	ld a, (ballDirection.y)
 	cp 0
-    if (z)
-    {
-        ld a, (ballPosition.y)
-        cp PAD_POSITION_Y-2
-        if (nc)
-        {
-            ld a, (ballPosition+1)
-            cp PAD_POSITION_Y+2
-            if (c)
-            {
-                ld a, (ballPosition.x)
-                ld b, a
-                ld a, (padPosition)
-                sub 4
-                cp b
-                if (c)
-                {
-                    ld a, (ballPosition.x)
-                    ld b, a
-                    ld a, (padPosition)
-                    add a, 23
-                    cp b
-                    if (nc)
-                    {
-                        ld a, (ballDirection.y)
-                        xor 1
-                        ld (ballDirection.y), a
-                        ld a, PAD_POSITION_Y - 5
-                        ld (ballPosition.y), a
+	if (z)
+	{
+		ld a, (ballPosition.y)
+		cp PAD_POSITION_Y-2
+		if (nc)
+		{
+			ld a, (ballPosition+1)
+			cp PAD_POSITION_Y+2
+			if (c)
+			{
+				ld a, (ballPosition.x)
+				ld b, a
+				ld a, (padPosition)
+				sub 4
+				cp b
+				if (c)
+				{
+					ld a, (ballPosition.x)
+					ld b, a
+					ld a, (padPosition)
+					add a, 23
+					cp b
+					if (nc)
+					{
+						ld a, (ballDirection.y)
+						xor 1
+						ld (ballDirection.y), a
+						ld a, PAD_POSITION_Y - 5
+						ld (ballPosition.y), a
 
-	                    resetScoreMult()
+						resetScoreMult()
 
-                        ; Check Bounce
-                        ld a, (ballPosition.x)
-                        ld b, a
-                        ld a, (padPosition)
-                        sub 4
-                        ld c, a
-                        ld a, b
-                        ld b, c
-                        sub b
-                        ld b, a
-                        cp 6
-                        if (c)
-                        {
-                            ld a, 1
-                            ld (ballDirection.x), a
-                            ld a, 3
-                            ld (ballVelocity.x), a
-                            ld a, 3
-                            ld (ballVelocity.y), a
-                        }
-                        else
-                        {
-                            ld a, b
-                            cp 11
-                            if (c)
-                            {
-                                ld a, 1
-                                ld (ballDirection.x), a
-                                ld a, 2
-                                ld (ballVelocity.x), a
-                                ld a, 4
-                                ld (ballVelocity.y), a
-                            }
-                            else
-                            {
-                                ld a, b
-                                cp 14
-                                if (c)
-                                {
-                                    ld a, 1
-                                    ld (ballDirection.x), a
-                                    ld a, 1
-                                    ld (ballVelocity.x), a
-                                    ld a, 4
-                                    ld (ballVelocity.y), a
-                                }
-                                else
-                                {
-                                    ld a, b
-                                    cp 17
-                                    if (c)
-                                    {
-                                        ld a, 0
-                                        ld (ballDirection.x), a
-                                        ld a, 1
-                                        ld (ballVelocity.x), a
-                                        ld a, 4
-                                        ld (ballVelocity.y), a
-                                    }
-                                    else
-                                    {
-                                        ld a, b
-                                        cp 22
-                                        if (c)
-                                        {
-                                            ld a, 0
-                                            ld (ballDirection.x), a
-                                            ld a, 2
-                                            ld (ballVelocity.x), a
-                                            ld a, 4
-                                            ld (ballVelocity.y), a
-                                        }
-                                        else
-                                        {
-                                            ld a, 0
-                                            ld (ballDirection.x), a
-                                            ld a, 3
-                                            ld (ballVelocity.x), a	
-                                            ld a, 3
-                                            ld (ballVelocity.y), a
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
+						; Check Bounce
+						ld a, (ballPosition.x)
+						ld b, a
+						ld a, (padPosition)
+						sub 4
+						ld c, a
+						ld a, b
+						ld b, c
+						sub b
+						ld b, a
+						cp 6
+						if (c)
+						{
+							ld a, 1
+							ld (ballDirection.x), a
+							ld a, 3
+							ld (ballVelocity.x), a
+							ld a, 3
+							ld (ballVelocity.y), a
+						}
+						else
+						{
+							ld a, b
+							cp 11
+							if (c)
+							{
+								ld a, 1
+								ld (ballDirection.x), a
+								ld a, 2
+								ld (ballVelocity.x), a
+								ld a, 4
+								ld (ballVelocity.y), a
+							}
+							else
+							{
+								ld a, b
+								cp 14
+								if (c)
+								{
+									ld a, 1
+									ld (ballDirection.x), a
+									ld a, 1
+									ld (ballVelocity.x), a
+									ld a, 4
+									ld (ballVelocity.y), a
+								}
+								else
+								{
+									ld a, b
+									cp 17
+									if (c)
+									{
+										ld a, 0
+										ld (ballDirection.x), a
+										ld a, 1
+										ld (ballVelocity.x), a
+										ld a, 4
+										ld (ballVelocity.y), a
+									}
+									else
+									{
+										ld a, b
+										cp 22
+										if (c)
+										{
+											ld a, 0
+											ld (ballDirection.x), a
+											ld a, 2
+											ld (ballVelocity.x), a
+											ld a, 4
+											ld (ballVelocity.y), a
+										}
+										else
+										{
+											ld a, 0
+											ld (ballDirection.x), a
+											ld a, 3
+											ld (ballVelocity.x), a	
+											ld a, 3
+											ld (ballVelocity.y), a
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
 	; Collision Bricks
 
 	ld a, (ballDirection.x)
 	cp 0
-    if (z)
-    {
-        ld a, (ballPosition.x)
-        add a, 5
-    }
-    else
-    {
-	    ld a, (ballPosition.x)
-    }
+	if (z)
+	{
+		ld a, (ballPosition.x)
+		add a, 5
+	}
+	else
+	{
+		ld a, (ballPosition.x)
+	}
 	sub 31
 	srl a
 	srl a
@@ -695,15 +695,15 @@ function movePadBall()
 
 	ld a, (ballDirection.y)
 	cp 0
-    if (z)
-    {
-        ld a, (ballPosition.y)
-        add a, 5
-    }
-    else
-    {
-	    ld a, (ballPosition.y)
-    }
+	if (z)
+	{
+		ld a, (ballPosition.y)
+		add a, 5
+	}
+	else
+	{
+		ld a, (ballPosition.y)
+	}
 	sub 31
 	srl a
 	srl a
@@ -744,41 +744,41 @@ function movePadBall()
 	in a, (c)
 	ld l, a
 	cp 0xFA
-    if (z)
-    {
-        ld a, 1
-        ld (ballDirection.x), a
-        ld a, (ballDirection.y)
-        xor 1
-        ld (ballDirection.y), a
+	if (z)
+	{
+		ld a, 1
+		ld (ballDirection.x), a
+		ld a, (ballDirection.y)
+		xor 1
+		ld (ballDirection.y), a
 
-        ld a, 0xFE
-        out (c), a
-        inc bc
-        out (c), a
+		ld a, 0xFE
+		out (c), a
+		inc bc
+		out (c), a
 
-        addScore()
-    }
-    else
-    {
-        ld a, l
-        cp 0xFB
-        if (z)
-        {
-            ld a, 0
-            ld (ballDirection.x), a
-            ld a, (ballDirection.y)
-            xor 1
-            ld (ballDirection.y), a
+		addScore()
+	}
+	else
+	{
+		ld a, l
+		cp 0xFB
+		if (z)
+		{
+			ld a, 0
+			ld (ballDirection.x), a
+			ld a, (ballDirection.y)
+			xor 1
+			ld (ballDirection.y), a
 
-            ld a, 0xFE
-            out (c), a
-            dec bc
-            out (c), a
+			ld a, 0xFE
+			out (c), a
+			dec bc
+			out (c), a
 
-            addScore()
-        }
-    }
+			addScore()
+		}
+	}
 }
 
 ;----------------------------------
@@ -812,10 +812,10 @@ function addScore()
 	dec a
 	ld (bricks), a
 	cp 0
-    if (z)
-    {
-	    doWin()
-    }
+	if (z)
+	{
+		doWin()
+	}
 }
 
 ;----------------------------------
@@ -851,18 +851,18 @@ function lifeLost()
 	out (c), a
 	ld a, (lives)
 	cp 0
-    if (z)
-    {
-	    doLose()
-    }
-    else
-    {
-        ld hl, loseText
-        showText()
-        ld a, 1
-        ld (paused), a
-        resetBallPad()
-    }
+	if (z)
+	{
+		doLose()
+	}
+	else
+	{
+		ld hl, loseText
+		showText()
+		ld a, 1
+		ld (paused), a
+		resetBallPad()
+	}
 }
 
 ;----------------------------------
@@ -931,15 +931,15 @@ function handleTimeCount()
 	inc a
 	ld (timeStep), a
 	cp 25
-    if (z)
-    {
-        ld a, 0
-        ld (timeStep), a
+	if (z)
+	{
+		ld a, 0
+		ld (timeStep), a
 
-        ld hl, (time)
-        inc hl
-        ld (time), hl
-    }
+		ld hl, (time)
+		inc hl
+		ld (time), hl
+	}
 
 	ld hl, (time)
 	ld de, Console::PPU_NAME_TABLE_1 + 23
@@ -969,30 +969,30 @@ function writeNumScreen()
 	ld bc, -1
 writeNumScreen1:
 	ld a, 48 - 1 ; '0' - 1
-    do
-    {
-        inc a
-        add hl, bc
-    } while(c)
+	do
+	{
+		inc a
+		add hl, bc
+	} while(c)
 
 	sbc hl, bc
 
 	ld (multiPurposeTemp), a
 	cp 48
-    if (z)
-    {
-        ld a, (firstNonZero)
-        cp 0
-        if (z)
-        {
-            ld a, (multiPurposeTemp+1)
-            cp 4
-            if (nz)
-            {
-                jr writeNumScreen2
-            }
-        }
-    }
+	if (z)
+	{
+		ld a, (firstNonZero)
+		cp 0
+		if (z)
+		{
+			ld a, (multiPurposeTemp+1)
+			cp 4
+			if (nz)
+			{
+				jr writeNumScreen2
+			}
+		}
+	}
 
 	ld a, (multiPurposeTemp)
 	ld (tempWriteNum), de
@@ -1028,11 +1028,11 @@ function writeNumScreenWithZeros()
 	ld bc, -1
 writeNumScreenWithZeros1:
 	ld a, 48 - 1 ; '0' - 1
-    do
-    {
-        inc a
-        add hl, bc
-    } while(c)
+	do
+	{
+		inc a
+		add hl, bc
+	} while(c)
 	sbc hl, bc
 
 	ld (tempWriteNum), de
@@ -1049,31 +1049,31 @@ main:
 	ld hl, textInProgram
 	Console::writeTextRS232()
 #endif
-    forever
-    {
-    }
+	forever
+	{
+	}
 
 ;----------------------------------
 ;----------------------------------
 
 library Console
 {
-    ;----------------------------------
-    ;		writeTextRS232
-    ;		hl - 0 terminated text address
-    ;----------------------------------
-    function writeTextRS232()
-    {
-        do
-        {
-            ld a, (hl)
-            ld bc, OUT_RS232
-            out (c), a
-            inc hl
-            ld a, (hl)
-            cp 0
-        } while(nz)
-    } 
+	;----------------------------------
+	;		writeTextRS232
+	;		hl - 0 terminated text address
+	;----------------------------------
+	function writeTextRS232()
+	{
+		do
+		{
+			ld a, (hl)
+			ld bc, OUT_RS232
+			out (c), a
+			inc hl
+			ld a, (hl)
+			cp 0
+		} while(nz)
+	} 
 }
 
 ;----------------------------------
@@ -1081,7 +1081,7 @@ library Console
 
 struct Position
 {
-    byte x, y
+	byte x, y
 }
 
 data byte textInProgram = "In Program...", 10, 13, 0
@@ -1094,8 +1094,8 @@ data byte initialized = 0
 data word joyInfo = 0
 data byte padPosition = 131
 data Position ballPosition = {
-    x = 141
-    y = 125
+	x = 141
+	y = 125
 }
 data word tempWriteNum = 0
 data word time = 0
@@ -1108,8 +1108,8 @@ data byte winText = 0xFE, "YOU", 0xFE, 0xFE, "WON!", 0xFE
 data byte lostText = 0xFE, 0xFE, "YOU", 0xFE, "LOST", 0xFE
 data byte loopTemp = 0
 data Position ballVelocity = {
-    x = 2
-    y = 3
+	x = 2
+	y = 3
 }
 data Position ballDirection
 data Position tilePosition
@@ -1122,26 +1122,26 @@ data byte firstNonZero = 0
 data byte multiPurposeTemp = 0, 0
 
 data byte nameTable1 =  0x03, 0x03, 0x03, 0x00, 0x00, 0x53, 0x43, 0x4F, 0x52, 0x45, 0x00, 0x30, 0x30, 0x30, 0x30, 0x30, 0x00, 0x00, 0x00, 0x54, 0x49, 0x4D, 0x45, 0x00, 0x00, 0x00, 0x00, 0x30,
-                        0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFC,
-                        0xFC, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFC,
-                        0xFC, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFC,
-                        0xFC, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFC,
-                        0xFC, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0x50, 0x52, 0x45, 0x53, 0x53, 0xFE, 0x53, 0x54, 0x41, 0x52, 0x54, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
-                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC
+						0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFC,
+						0xFC, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFC,
+						0xFC, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFC,
+						0xFC, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFC,
+						0xFC, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0x50, 0x52, 0x45, 0x53, 0x53, 0xFE, 0x53, 0x54, 0x41, 0x52, 0x54, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+						0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC

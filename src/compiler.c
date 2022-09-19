@@ -1206,11 +1206,48 @@ static int second_pass(struct ASTNode *first_node)
 
                             clear_struct_bytes(structured_type->struct_size);
                             if (compile_struct_init(struct_init, structured_type, 0)) { return 1; }
+                            int list_skip_bytes = 0;
                             for(int i = 0; i < structured_type->struct_size; i++)
                             {
-                                add_output_element_set_address(0, struct_bytes[i]);
+                                add_output_element_set_address(0, struct_bytes[i]);                    
 
-                                if (fp_list != NULL) fprint_db_list(fp_list, node, 0, struct_bytes[i], FPRINT_DB_TYPE_BYTE);
+                                if (i > 0)
+                                {
+                                    if (fp_list != NULL) fprint_db_list_end(fp_list);
+                                }
+
+                                if (struct_bytes[i] != NULL)
+                                {
+                                    switch(struct_bytes[i]->type)
+                                    {
+                                        case NODE_TYPE_EXPRESSION_16:
+                                        {
+                                            if (fp_list != NULL) fprint_db_list(fp_list, node, 0, struct_bytes[i], FPRINT_DB_TYPE_WORD);
+                                            list_skip_bytes = 2;
+                                            break;
+                                        }
+                                        case NODE_TYPE_EXPRESSION_32:
+                                        {
+                                            if (fp_list != NULL) fprint_db_list(fp_list, node, 0, struct_bytes[i], FPRINT_DB_TYPE_DWORD);
+                                            list_skip_bytes = 4;
+                                            break;
+                                        }
+                                        default:
+                                        {
+                                            if (fp_list != NULL) fprint_db_list(fp_list, node, 0, struct_bytes[i], FPRINT_DB_TYPE_BYTE);
+                                            list_skip_bytes = 1;
+                                        }
+                                    }
+                                }
+                                else if (list_skip_bytes == 0)
+                                {
+                                    if (fp_list != NULL) fprint_db_list(fp_list, node, 0, struct_bytes[i], FPRINT_DB_TYPE_BYTE);
+                                }
+
+                                if (list_skip_bytes > 0)
+                                {
+                                    list_skip_bytes--;
+                                }
                             }
                             compiler_current_address += structured_type->struct_size;
                         }
