@@ -53,7 +53,7 @@ There is also code for syntax highlighting plugins for text editors in the folde
 
 ## Extra Resources
 
-In the directory examples you can find example programs for the Nintendo Gameboy and Sega Master System consoles as well as for my own homebrew videogame console (https://internalregister.github.io/2019/03/14/Homebrew-Console.html).
+In the directory `examples` you can find example programs for the Nintendo Gameboy (`gb`) and Sega Master System (`sms`) consoles as well as for my own [homebrew videogame console]() (https://internalregister.github.io/2019/03/14/Homebrew-Console.html) (`homebrew_console`).
 
 ## License
 

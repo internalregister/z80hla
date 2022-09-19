@@ -727,7 +727,7 @@ ld (Misc::value), a
 ld hl, Misc::func
 ```
 
-## Sugestions
+## Suggestions
 
 The assembler will only take one input file.  
 If the program is too large and comprised of multiple files, it is advisable to create one file as the entry point and include the other files.
