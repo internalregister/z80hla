@@ -13,7 +13,7 @@ Example of the syntax:
 
 jp main
 
-data byte [$-0x66]
+data byte [0x66-$]
 interrupt nmi()
 {
 }
