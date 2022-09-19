@@ -1,0 +1,16 @@
+
+bin/
+obj/
+build/
+editors/vscode/node_modules/
+
+output.ast
+output_ast.json
+output_ast_after_first_pass.json
+output_constants.json
+output_output.json
+output_dependencies.json
+output_library_symbols_used.json
+output_structs.json
+output_data.json
+output.bin

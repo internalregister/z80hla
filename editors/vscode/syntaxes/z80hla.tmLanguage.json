@@ -1,0 +1,128 @@
+{
+    "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+    "name": "z80hla",
+	"fileTypes": [
+		"z80hla"
+	],
+	"scopeName": "source.z80hla",
+    "patterns": [
+        {
+			"include": "#keywords"
+		},
+		{
+			"include": "#number"
+		},
+		{
+			"include": "#strings"
+		},
+		{
+			"include": "#comments"
+		}
+    ],
+    "repository": {
+        "keywords" : {
+            "patterns": [
+				{
+					"name": "keyword.control.z80hla",
+					"match": "\\s*(?:((#)\\s*(define|endif|else|ifdef|ifndef|print|origin|output_on|output_off|include_binary|output_file|cpu_type)))\\b"
+				},
+                {
+                    "name": "keyword.op.z80hla",
+                    "match": "\\b(nop|adc|add|and|bit|call|ccf|cp|cpd|cpdr|cpi|cpir|cpl|daa|dec|di|djnz|ei|ex|exx|halt|im|in|inc|ind|indr|ini|inir|jp|jr|ld|ldd|lddr|ldi|ldir|neg|or|otdr|otir|out|outd|outi|pop|push|res|ret|reti|retn|rl|rla|rlc|rlca|rld|rr|rra|rrc|rrca|rrd|rst|sbc|scf|set|sla|sra|srl|sub|xor|db|sll|swap|stop|ldh|ldhl|mulub|muluw)\\b"
+                },
+                {
+                    "name": "keyword.reg.z80hla",
+                    "match": "\\b(a|b|c|d|e|h|l|f|i|r|af(')?|bc|de|hl|sp|pc|ix|iy|ixl|ixh|iyl|iyh|nc|m|p|z|nz|pe|po)\\b"
+                },
+				{
+                    "name": "keyword.control.z80hla",
+                    "match": "\\b(function|inline|if|else|library|data|from|interrupt|const|sizeof|while|do|forever|break|length)\\b"
+                }, 
+                {
+                    "name": "storage.type.z80hla",
+                    "match": "\\b(struct|union|byte|word|dword)\\b"
+                }
+            ]
+        },
+		"number": {
+			"patterns": [
+				{
+					"name": "constant.numeric.hex.z80hla",
+					"match": "\\b(?<!\\$)0x[0-9a-fA-F][0-9a-fA-F_]*(n)?\\b(?!\\$)",
+					"captures": {
+						"1": {
+							"name": "storage.type.numeric.bigint.z80hla"
+						}
+					}
+				},
+				{
+					"name": "constant.numeric.binary.z80hla",
+					"match": "\\b(?<!\\$)0b[01][01_]*(n)?\\b(?!\\$)",
+					"captures": {
+						"1": {
+							"name": "storage.type.numeric.bigint.z80hla"
+						}
+					}
+				},
+				{
+					"name": "constant.numeric.octal.z80hla",
+					"match": "\\b(?<!\\$)0o?[0-7][0-7_]*(n)?\\b(?!\\$)",
+					"captures": {
+						"1": {
+							"name": "storage.type.numeric.bigint.z80hla"
+						}
+					}
+				},
+				{
+					"name": "constant.numeric.z80hla",
+					"match": "\\b(?<!\\$)[0-9][0-9_]*(n)?\\b(?!\\$)",
+					"captures": {
+						"1": {
+							"name": "storage.type.numeric.bigint.z80hla"
+						}
+					}
+				}
+			],
+			"name": "constant.numeric.z80hla"
+		},
+        "strings": {						
+			"patterns": [
+				{
+					"name": "string.quoted.double.z80hla",
+					"begin": "\"",
+					"end": "\"",					
+					"patterns": [
+						{
+							"name": "constant.character.escape.z80hla",
+							"match": "\\\\."
+						}
+					]
+				},
+				{
+					"name": "string.quoted.single.z80hla",
+					"begin": "(?<!af)'",
+					"end": "'",					
+					"patterns": [
+						{
+							"name": "constant.character.escape.z80hla",
+							"match": "\\\\."
+						}
+					]
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"begin": "\\s*+(\\/\\*)",
+					"end": "\\*\\/",
+					"name": "comment.block.z80hla"
+				},
+				{
+					"match": "(//|;).*$\\n?",
+					"name": "comment.line.z80hla"
+				}
+			]
+		}
+    }
+}

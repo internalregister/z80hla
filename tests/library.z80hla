@@ -1,0 +1,46 @@
+jp loop
+
+library Console
+{
+    const c_stuff = 10
+
+    data byte single_byte = 100
+
+    function rand()
+    {
+        ld a, Console2::random_seed
+        label:
+        nop
+    }
+
+    function rand1_5()
+    {
+        ld a, 100        
+    }
+
+    function rand2()
+    {
+        ld a, Console2::random_seed2
+        call rand
+        nop
+    }
+}
+
+loop:
+
+    ld a, 120
+    ld (Console::single_byte), a
+
+    call Console::rand2
+
+label:
+
+    jp Console::label
+    jp loop
+
+library Console2
+{
+    data word random_seed = 10000
+    data word random_other_stuff = 555
+    data word random_seed2 = Console::c_stuff * 10
+}

@@ -1,0 +1,25 @@
+#origin 0
+
+inline testInline()
+{
+    ld a, 10
+    ld b, 20
+    sub b
+}
+
+label:
+    testInline()    
+
+label2:
+    testInline2()
+    jp label
+    jp label2
+
+inline testInline2()
+{
+    nop
+    testInline()
+    nop
+    testInline()
+    nop
+}

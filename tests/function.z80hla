@@ -1,0 +1,22 @@
+#origin 0
+
+jp main
+
+function FunctionA()
+{
+    FunctionB()
+}
+
+function FunctionB()
+{
+    FunctionA()
+    call FunctionA
+}
+
+call FunctionA
+ld a, 100
+
+main:
+    FunctionB()
+    FunctionA()
+    jr main

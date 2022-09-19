@@ -1,0 +1,1 @@
+au BufRead,BufNewFile *.z80hla set filetype=z80hla

@@ -1,0 +1,172 @@
+
+#output_file "helloworld2.sms"
+
+#origin 0x0000
+;==============================================================
+; Boot section
+;==============================================================
+    di              ; disable interrupts
+    im 1            ; Interrupt mode 1
+    jp main         ; jump to main program
+
+data byte [0x0066 - $]
+;==============================================================
+; Pause button handler
+;==============================================================
+interrupt nmi()
+{
+    ; Do nothing
+}
+
+;==============================================================
+; Main program
+;==============================================================
+main:
+    ld sp, 0xdff0
+
+    ;==============================================================
+    ; Set up VDP registers
+    ;==============================================================
+    ld hl,VDPInitData
+    ld b,sizeof(VDPInitData)
+    ld c,SMS::VDPControl
+    otir
+
+    ;==============================================================
+    ; Clear VRAM
+    ;==============================================================
+    ; 1. Set VRAM write address to $0000
+    ld hl,0x0000 | SMS::VRAMWrite
+    SMS::SetVDPAddress()
+    ; 2. Output 16KB of zeroes
+    ld bc,0x4000     ; Counter for 16KB of VRAM
+    do
+    {
+        xor a
+        out (SMS::VDPData),a ; Output to VRAM address, which is auto-incremented after each write
+        dec bc
+        ld a,b
+        or c
+    } while (nz)
+
+    ;==============================================================
+    ; Load palette
+    ;==============================================================
+    ; 1. Set VRAM write address to CRAM (palette) address 0
+    ld hl,0x0000 | SMS::CRAMWrite
+    SMS::SetVDPAddress()
+    ; 2. Output colour data
+    ld hl,PaletteData
+    ld bc,sizeof(PaletteData)
+    SMS::CopyToVDP()
+
+    ;==============================================================
+    ; Load tiles (font)
+    ;==============================================================
+    ; 1. Set VRAM write address to tile index 0
+    ld hl,0x0000 | SMS::VRAMWrite
+    SMS::SetVDPAddress()
+    ; 2. Output tile data
+    ld hl,FontData              ; Location of tile data
+    ld bc,sizeof(FontData)      ; Counter for number of bytes to write
+    SMS::CopyToVDP()
+
+    ;==============================================================
+    ; Write text to name table
+    ;==============================================================
+    ; 1. Set VRAM write address to tilemap index 0
+    ld hl,0x3800 | SMS::VRAMWrite
+    SMS::SetVDPAddress()
+    ; 2. Output tilemap data
+    ld hl,Message
+    ld a,(hl)
+    do
+    {
+        sub 0x20
+        out (SMS::VDPData),a
+        xor a
+        out (SMS::VDPData),a
+        inc hl
+        ld a, (hl)
+        cp 0xff
+    } while (nz)
+
+    ; Turn screen on
+    ld a,0b01000000
+;           ||||||`- Zoomed sprites -> 16x16 pixels
+;           |||||`-- Doubled sprites -> 2 tiles per sprite, 8x16
+;           ||||`--- Mega Drive mode 5 enable
+;           |||`---- 30 row/240 line mode
+;           ||`----- 28 row/224 line mode
+;           |`------ VBlank interrupts
+;           `------- Enable display
+    out (SMS::VDPControl),a
+    ld a,0x81
+    out (SMS::VDPControl),a
+
+    ; Infinite loop to stop program
+    forever
+    {   
+    }
+
+;==============================================================
+; Helper functions
+;==============================================================
+
+library SMS
+{
+    const VDPControl = 0xbf
+    const VDPData = 0xbe
+    const VRAMWrite = 0x4000
+    const CRAMWrite = 0xc000
+
+    function SetVDPAddress()
+    {
+    ; Sets the VDP address
+    ; Parameters: hl = address
+        push af
+            ld a,l
+            out (VDPControl),a
+            ld a,h
+            out (VDPControl),a
+        pop af
+    }
+
+    function CopyToVDP()
+    {
+    ; Copies data to the VDP
+    ; Parameters: hl = data address, bc = data length
+    ; Affects: a, hl, bc
+        do
+        {
+            ld a,(hl)    ; Get data byte
+            out (VDPData),a
+            inc hl       ; Point to next letter
+            dec bc
+            ld a,b
+            or c
+        } while (nz)
+    }
+}
+
+;==============================================================
+; Data
+;==============================================================
+
+data byte Message = "Hello world!", 0xff
+
+data byte PaletteData = 0x00,0x3f ; Black, white
+
+; VDP initialisation data
+data byte VDPInitData = 0x04,0x80,0x00,0x81,0xff,0x82,0xff,0x85,0xff,0x86,0xff,0x87,0x00,0x88,0x00,0x89,0xff,0x8a
+
+data byte FontData from "font.bin"
+
+; ROM Header
+data byte [0x7FF0 - $]
+
+data byte = "TMR SEGA"
+data byte = 0x00, 0x00
+data byte = 0x00, 0x00
+data byte = 0x26, 0x70
+data byte = 0x20, 0x3c

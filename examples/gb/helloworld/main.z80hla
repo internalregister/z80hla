@@ -1,0 +1,96 @@
+#output_file "helloworld.gb"
+#cpu_type "gb"
+#origin 0x0000
+
+// **********
+//   Header
+// **********
+
+data byte [0x100-$]
+
+EntryPoint:
+    di
+    jp Start 
+
+data byte = 0xCE,0xED,0x66,0x66,0xCC,0x0D,0x00,0x0B,0x03,0x73,0x00,0x83,0x00,0x0C,0x00,0x0D,
+            0x00,0x08,0x11,0x1F,0x88,0x89,0x00,0x0E,0xDC,0xCC,0x6E,0xE6,0xDD,0xDD,0xD9,0x99,
+            0xBB,0xBB,0x67,0x63,0x6E,0x0E,0xEC,0xCC,0xDD,0xDC,0x99,0x9F,0xBB,0xB9,0x33,0x3E
+
+data byte [0x150-$]
+
+library Hardware
+{
+    const rLY = 0xFF44
+    const rLCDC = 0xFF40
+    const rBGP = 0xFF47
+    const rSCY = 0xFF42
+    const rSCX = 0xFF43
+    const rNR52 = 0xFF26
+}
+
+// ********
+//   Main
+// ********
+
+#print "Code start: ", $
+
+Start:
+    do
+    {
+        ld a, (Hardware::rLY)
+        cp 144
+    } while(c)
+
+    xor a ; ld a, 0
+    ld (Hardware::rLCDC), a
+
+    ld hl, 0x9000
+    ld de, FontTiles
+    ld bc, sizeof(FontTiles)
+
+    do
+    {
+        ld a, (de)
+        ldi (hl), a
+        inc de
+        dec bc
+        ld a, b
+        or c
+    } while(nz)
+
+    ld hl, 0x9900; print sentence on top screen
+    ld de, HelloWorldStr
+
+    do
+    {
+        ld a, (de)
+        ldi (hl), a
+        inc de
+        and a
+    } while(nz)
+
+    ld a, 0b11100100
+    ld (Hardware::rBGP), a
+
+    xor a; ld a, 0
+    ld (Hardware::rSCY), a
+    ld (Hardware::rSCX), a
+    ld (Hardware::rNR52), a
+    ld a, 0b10000001
+    ld (Hardware::rLCDC), a
+
+    forever
+    {
+    }
+
+#print "Code end: ", $
+
+data byte FontTiles from "font.chr"
+
+data byte HelloWorldStr = "Hello Z80HLA !", 0
+
+#print "Data end: ", $
+
+// Fill to 32Kb
+data byte [0x8000-$]
+

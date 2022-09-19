@@ -1,0 +1,69 @@
+#origin 0
+
+inline nop10()
+{
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+    nop
+}
+
+inline nop100()
+{
+    nop10()
+    nop10()
+    nop10()
+    nop10()
+    nop10()
+    nop10()
+    nop10()
+    nop10()
+    nop10()
+    nop10()
+}
+
+if (nz)
+{
+    nop
+    nop
+}
+
+ld a, c
+cp 10
+
+if (c)
+{
+    nop
+}
+else
+{
+    nop
+    nop
+    nop
+}
+
+if (nc)
+{
+    nop100()
+    nop100()
+    nop100()
+}
+
+if (z)
+{
+    nop10()
+}
+else
+{
+    nop100()
+    nop100()
+    nop100()
+    nop100()
+    nop100()
+}

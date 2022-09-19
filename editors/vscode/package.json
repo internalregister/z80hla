@@ -1,0 +1,37 @@
+{
+    "name": "z80hla",
+    "displayName": "z80hla",
+    "description": "Z80 high-level assembly",
+    "license": "BSD",
+    "version": "1.0.0",
+    "publisher": "Sérgio Vieira",
+    "categories": [],
+    "engines": {
+        "vscode": "^1.67.0"
+    },
+    "contributes": {
+        "languages": [
+            {
+                "id": "z80hla",
+                "aliases": [
+                    "Z80hla",
+                    "Z80HLA"
+                ],
+                "extensions": [
+                    ".z80hla"
+                ],
+                "configuration": "./language-configuration.json"
+            }
+        ],
+        "grammars": [
+            {
+                "language": "z80hla",
+                "scopeName": "source.z80hla",
+                "path": "./syntaxes/z80hla.tmLanguage.json"
+            }
+        ]
+    },
+    "dependencies": {
+        "vsce": "^2.11.0"
+    }
+}

@@ -1,0 +1,1147 @@
+/*
+    Copyright (c) 2022, Sérgio Vieira <internalregister@gmail.com>
+    All rights reserved.
+
+    Redistribution and use in source and binary forms, with or without
+    modification, are permitted provided that the following conditions are met:
+
+    1. Redistributions of source code must retain the above copyright notice, this
+    list of conditions and the following disclaimer.
+
+    2. Redistributions in binary form must reproduce the above copyright notice,
+    this list of conditions and the following disclaimer in the documentation
+    and/or other materials provided with the distribution.
+
+    THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+    AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+    IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+    DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
+    FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
+    DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+    SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+    CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
+    OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+*/
+
+#origin 0x2100
+
+#define DEBUG
+
+;----------------------------------
+;----------------------------------
+
+library Console
+{
+    const OUT_RS232 = 0x00
+    const OUT_RS232_BYTE = 0x01
+    const OUT_NAME = 0x0A
+    const IN_SD_INIT = 0x0A
+    const IN_SD_OPEN_DIR = 0x0B
+    const IN_SD_READ_CONTENTS = 0x10
+    const IN_SD_READ_CONTENT_NAME = 0x11
+    const IN_SD_READ_CONTENT_ATTRIBUTES = 0x12
+    const IN_SD_GOTO_CONTENT = 0x15
+    const IN_SD_OPEN_CONTENT_FILE = 0x20
+    const IN_SD_CLOSE_FILE = 0x21
+    const IN_SD_END_OF_FILE = 0x22
+    const IN_SD_READ_FILE = 0x23
+
+    const IN_RS232 = 0x00
+    const IN_PS2 = 0x01
+    const IN_JOY1_SEL0 = 0x02
+    const IN_JOY1_SEL1 = 0x03
+    const IN_JOY2_SEL0 = 0x04
+    const IN_JOY2_SEL1 = 0x05
+
+
+    const PPU_SCROLL_X = 0x1001
+    const PPU_SCROLL_Y = 0x1002
+    const PPU_SCROLL_PAGES = 0x1003
+
+    const PPU_SPRITES = 0x1004
+
+    const PPU_NAME_TABLE_1 = 0x1144
+    const PPU_NAME_TABLE_2 = 0x13E4
+    const PPU_NAME_TABLE_3 = 0x1684
+    const PPU_NAME_TABLE_4 = 0x1924
+
+    const PPU_TILE_TABLE_1 = 0x1BC4
+    const PPU_TILE_TABLE_2 = 0x1C6C
+    const PPU_TILE_TABLE_3 = 0x1D14
+    const PPU_TILE_TABLE_4 = 0x1DBC
+
+    const PPU_OVERLAY = 0x1E64
+}
+
+;----------------------------------
+; *** Game Specific Constants ***
+;----------------------------------
+
+const BALL_SPRITE = Console::PPU_SPRITES
+const PAD_SPRITE = Console::PPU_SPRITES + 5
+
+const BALL_SPRITE_NUM = 75
+const PAD_SPRITE_NUM = 76
+
+const PAD_POSITION_Y = 196
+
+const PAD_MIN_X = 39
+const PAD_MAX_X = 223
+
+;----------------------------------
+;----------------------------------
+
+jp main
+
+data byte [0x2166 - $]
+
+function programNMI()
+{
+;	Init
+	ld a, (initialized)
+	cp 0
+    if (z)
+    {
+        initNameTables()
+        initSprites()
+
+        ld hl, initialized
+        ld (hl), 1
+    }
+	getJoyInfo()
+	checkPause()
+
+	ld a, (paused)
+	cp 1
+    if (nz)
+    {
+        movePadBall()
+        handleTimeCount()
+    }
+	setSprites()
+}
+
+;----------------------------------
+;   initNameTables
+;----------------------------------
+
+
+function initNameTables()
+{
+	ld hl, Console::PPU_NAME_TABLE_1
+	ld (currentNameTablePos), hl
+	
+	ld hl, nameTable1
+	ld (currentNameTableSourcePos), hl
+
+	ld hl, currentTile.x
+	ld (hl), 0
+
+    do
+    {
+        ld hl, currentTile.y
+        ld (hl), 0
+
+        do
+        {
+            ld hl, (currentNameTableSourcePos)
+            ld a, (hl)
+            ld bc, (currentNameTablePos)
+            out (c), a
+
+            ld hl, (currentNameTableSourcePos)
+            inc hl
+            ld (currentNameTableSourcePos), hl
+            
+            ld hl, (currentNameTablePos)
+            inc hl
+            ld (currentNameTablePos), hl
+
+            ld hl, currentTile.y
+            ld a, (hl)
+            inc a
+            ld (hl), a
+            cp 28
+        } while (nz)
+
+        ld hl, currentTile.x
+        ld a, (hl)
+        inc a
+        ld (hl), a
+        cp 24        
+    } while (nz)
+}
+
+;----------------------------------
+;----------------------------------
+
+function initSprites()
+{
+	ld hl, currentSprite
+	ld (hl), 0
+
+	ld bc, Console::PPU_SPRITES
+    do
+    {
+        ld a, 0
+        out (c), a
+        inc bc
+        out (c), a
+        inc bc
+        out (c), a
+        inc bc
+        out (c), a
+        inc bc
+        out (c), a
+
+        inc bc
+
+        ld hl, currentSprite
+        ld a, (hl)
+        inc a
+        ld (hl), a
+        cp 64
+    } while(nz)	
+}
+
+;----------------------------------
+;----------------------------------
+
+;----------------------------------
+;  setSprites
+;----------------------------------
+
+function setSprites()
+{
+
+	ld bc, BALL_SPRITE
+	ld a, 1			 ; Misc
+	out (c), a
+	inc bc			 ; Sprite
+	ld a, BALL_SPRITE_NUM	
+	out (c), a
+	inc bc			 ; ColorKey
+	ld a, 0x1F
+	out (c), a
+	inc bc			 ; X
+	ld hl, ballPosition.x
+	ld a, (hl)
+	out (c), a
+	inc bc			 ; Y
+	ld hl, ballPosition.y
+	ld a, (hl)
+	out (c), a
+
+	inc bc
+	ld a, 1			 ; Misc
+	out (c), a
+	inc bc			 ; Sprite
+	ld a, PAD_SPRITE_NUM
+	out (c), a
+	inc bc			 ; ColorKey
+	ld a, 0x1F
+	out (c), a
+	inc bc			 ; X
+	ld hl, padPosition
+	ld a, (hl)
+	out (c), a
+	inc bc			 ; Y
+	ld a, PAD_POSITION_Y
+	out (c), a
+
+	inc bc
+	ld a, 1			 ; Misc
+	out (c), a
+	inc bc			 ; Sprite
+	ld a, PAD_SPRITE_NUM+1
+	out (c), a
+	inc bc			 ; ColorKey
+	ld a, 0x1F
+	out (c), a
+	inc bc			 ; X
+	ld hl, padPosition
+	ld a, (hl)
+	add a, 8
+	out (c), a
+	inc bc			 ; Y
+	ld a, PAD_POSITION_Y
+	out (c), a
+
+	inc bc
+	ld a, 1			 ; Misc
+	out (c), a
+	inc bc			 ; Sprite
+	ld a, PAD_SPRITE_NUM+2
+	out (c), a
+	inc bc			 ; ColorKey
+	ld a, 0x1F
+	out (c), a
+	inc bc			 ; X
+	ld hl, padPosition
+	ld a, (hl)
+	add a, 16
+	out (c), a
+	inc bc			 ; Y
+	ld a, PAD_POSITION_Y
+	out (c), a
+
+}
+
+;----------------------------------
+;----------------------------------
+
+
+;----------------------------------
+; getJoyInfo
+;----------------------------------
+
+function getJoyInfo()
+{
+
+	ld bc, Console::IN_JOY1_SEL0
+	in a, (c)
+	ld hl, joyInfo
+	ld (hl), a
+
+	ld bc, Console::IN_JOY1_SEL1
+	in a, (c)
+	inc hl
+	ld (hl), a
+
+}
+
+
+;----------------------------------
+; checkPause
+;----------------------------------
+
+function checkPause()
+{
+
+	ld a, (joyInfo)
+	and 16 ; Start
+	cp 16
+    if (nz)
+    {
+        ld a, (startOff)
+        cp 1
+        if (z)
+        {
+            ld a, (paused)
+            xor 1
+            ld (paused), a
+            cp 0
+            if (z)
+            {
+                ld a, (reset)
+                cp 1
+                if (z)
+                {
+                    ld a, 0
+                    ld (reset), a
+
+                    fullReset()
+                    jr checkPauseOff
+                }
+            }
+            showPause()
+        }
+    }
+
+checkPauseOff:
+	ld a, (joyInfo)
+	and 16 ; Start
+	cp 16
+    if (nz)
+    {
+        ld a, 0
+        ld (startOff), a
+
+        ret
+    }
+	ld a, 1
+	ld (startOff), a
+}
+
+
+;----------------------------------
+; showText
+;			hl: text address
+;----------------------------------
+
+function showText()
+{
+	ld bc, Console::PPU_NAME_TABLE_1 + 288
+	ld a, 0
+	ld (loopTemp), a
+    do
+    {
+        ld a, (hl)
+        out (c), a
+
+        inc bc
+        inc hl
+
+        ld a, (loopTemp)
+        inc a
+        ld (loopTemp), a
+        cp 11
+    } while(nz)
+}
+
+
+;----------------------------------
+; showPause
+;----------------------------------
+
+function showPause()
+{
+	ld a, (paused)
+	cp 1
+    if (z)
+    {
+        ld hl, pausedText
+        showText()
+
+        ret
+    }
+
+	ld bc, Console::PPU_NAME_TABLE_1 + 288
+	ld d, 0
+    do
+    {
+        ld a, 0xFE
+        out (c), a
+
+        inc bc
+        inc d
+        ld a, d
+        cp 11
+    } while(nz)
+}
+
+;----------------------------------
+; movePadBall
+;----------------------------------
+
+function movePadBall()
+{
+
+;	Read Input to Move
+
+	ld hl, joyInfo
+	ld a, (hl)
+	and 1
+	cp 1 ; Left
+    if (nz)
+    {
+        ld hl, padPosition
+        ld a, (hl)
+        sub 5
+        ld (hl), a
+        cp PAD_MIN_X
+        if (c)
+        {
+            ld (hl), PAD_MIN_X
+        }
+    }
+    else
+    {
+        ld hl, joyInfo
+        ld a, (hl)
+        and 2
+        cp 2 ; Right
+        if (nz)
+        {
+            ld hl, padPosition
+            ld a, (hl)
+            add a, 5
+            ld (hl), a
+            cp PAD_MAX_X
+            if (nc)
+            {
+                ld (hl), PAD_MAX_X
+            }
+        }
+    }
+
+	; Move ball
+
+	ld a, (ballVelocity.x)
+	ld b, a
+	ld a, (ballDirection.x)
+	cp 0
+    if (z)
+    {
+        ld a, (ballPosition.x)
+        add a, b
+        ld (ballPosition.x), a
+    }
+    else
+    {	
+        ld a, (ballPosition.x)
+        sub b
+        ld (ballPosition.x), a
+    }
+
+	ld a, (ballVelocity.y)
+	ld b, a
+	ld a, (ballDirection.y)
+	cp 0
+    if (z)
+    {
+        ld a, (ballPosition.y)
+        add a, b
+        ld (ballPosition.y), a
+    }
+	else
+    {
+        ld a, (ballPosition.y)
+        sub b
+        ld (ballPosition.y), a
+    }
+
+	; Collision Walls
+
+	ld a, (ballPosition.x)
+	cp 39
+    if (c)
+    {
+        ld a, 39
+        ld (ballPosition.x), a
+        ld a, (ballDirection.x)
+        xor 1
+        ld (ballDirection.x), a	
+    }
+    else
+    {        
+        ld a, (ballPosition.x)
+        cp 242
+        if (nc)
+        {
+            ld a, 242
+            ld (ballPosition.x), a
+            ld a, (ballDirection.x)
+            xor 1
+            ld (ballDirection.x), a
+        }
+    }
+
+	ld a, (ballPosition.y)
+	cp 47
+    if (c)
+    {
+        ld a, 47
+        ld (ballPosition.y), a
+        ld a, (ballDirection.y)
+        xor 1
+        ld (ballDirection.y), a
+    }
+    else
+    {
+        ld a, (ballPosition.y)
+        cp 215
+        if (nc)
+        {
+            lifeLost()
+            ret
+        }
+    }
+
+	; Collision Pad
+	ld a, (ballDirection.y)
+	cp 0
+    if (z)
+    {
+        ld a, (ballPosition.y)
+        cp PAD_POSITION_Y-2
+        if (nc)
+        {
+            ld a, (ballPosition+1)
+            cp PAD_POSITION_Y+2
+            if (c)
+            {
+                ld a, (ballPosition.x)
+                ld b, a
+                ld a, (padPosition)
+                sub 4
+                cp b
+                if (c)
+                {
+                    ld a, (ballPosition.x)
+                    ld b, a
+                    ld a, (padPosition)
+                    add a, 23
+                    cp b
+                    if (nc)
+                    {
+                        ld a, (ballDirection.y)
+                        xor 1
+                        ld (ballDirection.y), a
+                        ld a, PAD_POSITION_Y - 5
+                        ld (ballPosition.y), a
+
+	                    resetScoreMult()
+
+                        ; Check Bounce
+                        ld a, (ballPosition.x)
+                        ld b, a
+                        ld a, (padPosition)
+                        sub 4
+                        ld c, a
+                        ld a, b
+                        ld b, c
+                        sub b
+                        ld b, a
+                        cp 6
+                        if (c)
+                        {
+                            ld a, 1
+                            ld (ballDirection.x), a
+                            ld a, 3
+                            ld (ballVelocity.x), a
+                            ld a, 3
+                            ld (ballVelocity.y), a
+                        }
+                        else
+                        {
+                            ld a, b
+                            cp 11
+                            if (c)
+                            {
+                                ld a, 1
+                                ld (ballDirection.x), a
+                                ld a, 2
+                                ld (ballVelocity.x), a
+                                ld a, 4
+                                ld (ballVelocity.y), a
+                            }
+                            else
+                            {
+                                ld a, b
+                                cp 14
+                                if (c)
+                                {
+                                    ld a, 1
+                                    ld (ballDirection.x), a
+                                    ld a, 1
+                                    ld (ballVelocity.x), a
+                                    ld a, 4
+                                    ld (ballVelocity.y), a
+                                }
+                                else
+                                {
+                                    ld a, b
+                                    cp 17
+                                    if (c)
+                                    {
+                                        ld a, 0
+                                        ld (ballDirection.x), a
+                                        ld a, 1
+                                        ld (ballVelocity.x), a
+                                        ld a, 4
+                                        ld (ballVelocity.y), a
+                                    }
+                                    else
+                                    {
+                                        ld a, b
+                                        cp 22
+                                        if (c)
+                                        {
+                                            ld a, 0
+                                            ld (ballDirection.x), a
+                                            ld a, 2
+                                            ld (ballVelocity.x), a
+                                            ld a, 4
+                                            ld (ballVelocity.y), a
+                                        }
+                                        else
+                                        {
+                                            ld a, 0
+                                            ld (ballDirection.x), a
+                                            ld a, 3
+                                            ld (ballVelocity.x), a	
+                                            ld a, 3
+                                            ld (ballVelocity.y), a
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+	; Collision Bricks
+
+	ld a, (ballDirection.x)
+	cp 0
+    if (z)
+    {
+        ld a, (ballPosition.x)
+        add a, 5
+    }
+    else
+    {
+	    ld a, (ballPosition.x)
+    }
+	sub 31
+	srl a
+	srl a
+	srl a ; / 8
+	ld (tilePosition.x), a
+
+	ld a, (ballDirection.y)
+	cp 0
+    if (z)
+    {
+        ld a, (ballPosition.y)
+        add a, 5
+    }
+    else
+    {
+	    ld a, (ballPosition.y)
+    }
+	sub 31
+	srl a
+	srl a
+	srl a ; / 8
+	ld (tilePosition.y), a
+
+	ld a, (tilePosition.y)
+	ld h, 0
+	ld l, a
+	add hl, hl
+	add hl, hl
+	add hl, hl
+	add hl, hl ; * 16
+	ld d, h
+	ld e, l
+	ld h, 0
+	ld l, a
+	add hl, hl
+	add hl, hl
+	add hl, hl ; * 8
+	add hl, de ; y * 16 + y * 8
+	ld d, h
+	ld e, l
+	ld h, 0
+	ld l, a
+	add hl, hl
+	add hl, hl ; * 4
+	add hl, de ; y * (16+8+4)
+	ld a, (tilePosition.x)
+	ld b, 0
+	ld c, a
+	add hl, bc ; y*28 + x
+
+	ld bc, Console::PPU_NAME_TABLE_1
+	add hl, bc ; NAME_TABLE1 + desl
+	ld b, h
+	ld c, l
+	in a, (c)
+	ld l, a
+	cp 0xFA
+    if (z)
+    {
+        ld a, 1
+        ld (ballDirection.x), a
+        ld a, (ballDirection.y)
+        xor 1
+        ld (ballDirection.y), a
+
+        ld a, 0xFE
+        out (c), a
+        inc bc
+        out (c), a
+
+        addScore()
+    }
+    else
+    {
+        ld a, l
+        cp 0xFB
+        if (z)
+        {
+            ld a, 0
+            ld (ballDirection.x), a
+            ld a, (ballDirection.y)
+            xor 1
+            ld (ballDirection.y), a
+
+            ld a, 0xFE
+            out (c), a
+            dec bc
+            out (c), a
+
+            addScore()
+        }
+    }
+}
+
+;----------------------------------
+; resetScoreMult
+;----------------------------------
+
+function resetScoreMult()
+{
+	ld a, 1
+	ld (scoreMult), a
+}
+
+;----------------------------------
+; addScore
+;----------------------------------
+
+function addScore()
+{
+	ld a, (scoreMult)
+	ld hl, (score)
+	ld b, 0
+	ld c, a
+	add hl, bc
+	ld (score), hl
+	ld de, Console::PPU_NAME_TABLE_1+11
+	writeNumScreenWithZeros()
+	ld a, (scoreMult)
+	inc a
+	ld (scoreMult), a
+	ld a, (bricks)
+	dec a
+	ld (bricks), a
+	cp 0
+    if (z)
+    {
+	    doWin()
+    }
+}
+
+;----------------------------------
+; doWin
+;----------------------------------
+
+function doWin()
+{
+	ld hl, winText
+	showText()
+	ld a, 1
+	ld (paused), a
+	ld (reset), a
+}
+
+;----------------------------------
+; lifeLost
+;----------------------------------
+
+function lifeLost()
+{
+	ld a, (lives)
+	dec a
+	ld (lives), a
+	ld hl, Console::PPU_NAME_TABLE_1
+	ld b, 0
+	ld c, a
+	add hl, bc
+	ld b, h
+	ld c, l
+	ld l, a
+	ld a, 0
+	out (c), a
+	ld a, (lives)
+	cp 0
+    if (z)
+    {
+	    doLose()
+    }
+    else
+    {
+        ld hl, loseText
+        showText()
+        ld a, 1
+        ld (paused), a
+        resetBallPad()
+    }
+}
+
+;----------------------------------
+; doLose
+;----------------------------------
+
+function doLose()
+{
+	ld hl, lostText
+	showText()
+	ld a, 1
+	ld (paused), a
+	ld (reset), a
+}
+
+function fullReset()
+{
+	resetBallPad()
+	ld a, 0
+	ld (initialized), a
+	ld a, 3
+	ld (lives), a
+	ld a, 65
+	ld (bricks), a
+	ld hl, 0
+	ld (score), hl
+	ld a, 1
+	ld (scoreMult), a
+	ld hl, 0
+	ld (time), hl
+	ld a, 0
+	ld (timeStep), a
+	ld a, 1
+	ld (paused), a
+}
+
+;----------------------------------
+; resetBallPad
+;----------------------------------
+
+function resetBallPad()
+{
+	ld a, 131
+	ld (padPosition), a
+	ld a, 141
+	ld (ballPosition.x), a
+	ld a, 125
+	ld (ballPosition.y), a
+	ld a, 2
+	ld (ballVelocity.x), a
+	ld a, 3
+	ld (ballVelocity.y), a
+	ld a, 0
+	ld (ballDirection.x), a
+	ld (ballDirection.y), a
+}
+
+;----------------------------------
+; handleTimeCount
+;----------------------------------
+
+function handleTimeCount()
+{
+
+	ld a, (timeStep)
+	inc a
+	ld (timeStep), a
+	cp 25
+    if (z)
+    {
+        ld a, 0
+        ld (timeStep), a
+
+        ld hl, (time)
+        inc hl
+        ld (time), hl
+    }
+
+	ld hl, (time)
+	ld de, Console::PPU_NAME_TABLE_1 + 23
+	writeNumScreen()
+}
+
+;----------------------------------
+;  writeNumScreen
+;		hl - Number
+;		de - Destination Tile
+;----------------------------------
+
+function writeNumScreen()
+{
+	ld a, 0
+	ld (firstNonZero), a
+	ld (multiPurposeTemp+1), a
+
+	ld bc, -10000
+	call writeNumScreen1
+	ld bc, -1000
+	call writeNumScreen1
+	ld bc, -100
+	call writeNumScreen1
+	ld bc, -10
+	call writeNumScreen1
+	ld bc, -1
+writeNumScreen1:
+	ld a, 48 - 1 ; '0' - 1
+    do
+    {
+        inc a
+        add hl, bc
+    } while(c)
+
+	sbc hl, bc
+
+	ld (multiPurposeTemp), a
+	cp 48
+    if (z)
+    {
+        ld a, (firstNonZero)
+        cp 0
+        if (z)
+        {
+            ld a, (multiPurposeTemp+1)
+            cp 4
+            if (nz)
+            {
+                jr writeNumScreen2
+            }
+        }
+    }
+
+	ld a, (multiPurposeTemp)
+	ld (tempWriteNum), de
+	ld bc, (tempWriteNum)
+	out (c), a
+
+writeNumScreen2:
+	inc de
+
+	ld a, (multiPurposeTemp+1)
+	inc a
+	ld (multiPurposeTemp+1), a
+
+}
+
+;----------------------------------
+;  writeNumScreenWithZeros
+;		hl - Number
+;		de - Destination Tile
+;----------------------------------
+
+function writeNumScreenWithZeros()
+{
+
+	ld bc, -10000
+	call writeNumScreenWithZeros1
+	ld bc, -1000
+	call writeNumScreenWithZeros1
+	ld bc, -100
+	call writeNumScreenWithZeros1
+	ld bc, -10
+	call writeNumScreenWithZeros1
+	ld bc, -1
+writeNumScreenWithZeros1:
+	ld a, 48 - 1 ; '0' - 1
+    do
+    {
+        inc a
+        add hl, bc
+    } while(c)
+	sbc hl, bc
+
+	ld (tempWriteNum), de
+	ld bc, (tempWriteNum)
+	out (c), a
+
+	inc de
+
+}
+
+main:
+
+#ifdef DEBUG
+	ld hl, textInProgram
+	Console::writeTextRS232()
+#endif
+    forever
+    {
+    }
+
+;----------------------------------
+;----------------------------------
+
+library Console
+{
+    ;----------------------------------
+    ;		writeTextRS232
+    ;		hl - 0 terminated text address
+    ;----------------------------------
+    function writeTextRS232()
+    {
+        do
+        {
+            ld a, (hl)
+            ld bc, OUT_RS232
+            out (c), a
+            inc hl
+            ld a, (hl)
+            cp 0
+        } while(nz)
+    } 
+}
+
+;----------------------------------
+;----------------------------------
+
+struct Position
+{
+    byte x, y
+}
+
+data byte textInProgram = "In Program...", 10, 13, 0
+data Position currentTile
+data word currentNameTableSourcePos = 0
+data word currentNameTablePos = 0
+data byte currentSprite = 0
+
+data byte initialized = 0
+data word joyInfo = 0
+data byte padPosition = 131
+data Position ballPosition = {
+    x = 141
+    y = 125
+}
+data word tempWriteNum = 0
+data word time = 0
+data byte timeStep = 0
+data byte paused = 1
+data byte startOff = 1
+data byte pausedText = 0xFE, 0xFE, 0xFE, "PAUSE", 0xFE, 0xFE, 0xFE
+data byte loseText = 0xFE, "LIFE", 0xFE, "LOST", 0xFE
+data byte winText = 0xFE, "YOU", 0xFE, 0xFE, "WON!", 0xFE
+data byte lostText = 0xFE, 0xFE, "YOU", 0xFE, "LOST", 0xFE
+data byte loopTemp = 0
+data Position ballVelocity = {
+    x = 2
+    y = 3
+}
+data Position ballDirection
+data Position tilePosition
+data word score = 0
+data byte scoreMult = 1
+data byte lives = 3
+data byte bricks = 65
+data byte reset = 0
+data byte firstNonZero = 0
+data byte multiPurposeTemp = 0, 0
+
+data byte nameTable1 =  0x03, 0x03, 0x03, 0x00, 0x00, 0x53, 0x43, 0x4F, 0x52, 0x45, 0x00, 0x30, 0x30, 0x30, 0x30, 0x30, 0x00, 0x00, 0x00, 0x54, 0x49, 0x4D, 0x45, 0x00, 0x00, 0x00, 0x00, 0x30,
+                        0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFC,
+                        0xFC, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFC,
+                        0xFC, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFC,
+                        0xFC, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFC,
+                        0xFC, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFA, 0xFB, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0x50, 0x52, 0x45, 0x53, 0x53, 0xFE, 0x53, 0x54, 0x41, 0x52, 0x54, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC,
+                        0xFC, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFE, 0xFC
