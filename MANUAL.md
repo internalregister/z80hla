@@ -33,7 +33,7 @@ Example:
 
 **#print *string|expression[*,*...]***
 
-Outputs expression values at compile-time.  
+Outputs expression values and strings at compile-time.  
 
 Example:
 ```
@@ -47,6 +47,7 @@ Example:
 **#endif**  
 
 Define identifiers that can be used to deactivate parts of the code.
+These directives are the only ones that can be used anywhere in the code, including in the same line as other syntactic elements.  
 
 Example:
 ```
@@ -54,7 +55,7 @@ Example:
 
 ld hl, size
 ld d, (hl)
-ld bc, 0x2003
+ld bc, #ifdef DEBUG 0x2002 #else 0x2003 #endif
 ld hl, start 
 do
 {
@@ -633,7 +634,7 @@ out (c), a
 
 Arithmetic: `+`, `-`, `*`, `/`, `%`  
 
-Bitwise: `~`, `|`, `&`  
+Bitwise: `~`, `|`, `&`, `^`, `<<`, `>>`  
 
 **Keywords**
 
@@ -727,19 +728,19 @@ ld (Misc::value), a
 ld hl, Misc::func
 ```
 
-## Suggestions
+## Suggestions of use
 
 The assembler will only take one input file.  
 If the program is too large and comprised of multiple files, it is advisable to create one file as the entry point and include the other files.
 
 Example of main file for a system with ROM from 0x0000 to 0x7FFF and RAM from 0x8000 onwards.  
-The code and readonly data sits in ROM and is assembled, the data sits in RAM and is not assembled (hence the use of `#output_off`
+The code and readonly data sits in ROM and is assembled, the data sits in RAM and is not assembled (hence the use of `#output_off`)
 
 ```
 // Start of ROM
 #origin 0x0000
 
-dtaa byte [0x066-$]
+data byte [0x066-$]
 #include "nmi.z80hla"
 
 #include "library_console_code.z80hla"
@@ -760,4 +761,21 @@ dtaa byte [0x066-$]
 #include "game_data.z80hla"
 
 #print "End of RAM data: ", $
+```
+
+There's also the possibility of generating several binary files from a simple compilation.  
+For this one only needs to use the directive `#output_file` several times.  
+Example:
+```
+#origin 0x0000
+#output_file "rom1.bin"
+#include "rom1.z80hla"
+
+#origin 0x0000
+#output_file "rom2.bin"
+#include "rom2.z80hla"
+
+#origin 0x8000
+#output_file "rom3.bin"
+#include "rom3.z80hla"
 ```

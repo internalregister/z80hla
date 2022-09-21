@@ -122,11 +122,11 @@ Here are some extra options you can use when executing the assembler:
 
 You can find the manual for the Z80HLA language [here](MANUAL.md).
 
-There is also code for syntax highlighting plugins for text editors in the folder `editors`.
+There is also code for syntax highlighting plugins for text editors in the folder [editors](https://github.com/internalregister/z80hla/tree/master/editors).
 
 ## Extra Resources
 
-In the directory `examples` you can find example programs for the Nintendo Gameboy (`gb`) and Sega Master System (`sms`) consoles as well as for my own [homebrew videogame console](https://internalregister.github.io/2019/03/14/Homebrew-Console.html) (`homebrew_console`).
+In the directory [examples](https://github.com/internalregister/z80hla/tree/master/examples) you can find example programs for the [Nintendo Gameboy](https://github.com/internalregister/z80hla/tree/master/examples/gb), [Sega Master System](https://github.com/internalregister/z80hla/tree/master/examples/sms) and for my own [homebrew videogame console](https://github.com/internalregister/z80hla/tree/master/examples/homebrew_console) ([Link to blog about my first homebrew videogame console](https://internalregister.github.io/2019/03/14/Homebrew-Console.html)).
 
 ## License
 
