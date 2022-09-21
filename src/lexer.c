@@ -42,10 +42,15 @@ int init_lexer(struct Lexer *lexer, char *filename)
         }
         fseek(fp, 0, SEEK_END);
         long file_size = ftell(fp);
-        fseek(fp, 0, SEEK_SET);
-        write_debug("Opened file \"%s\" with the size of %ld bytes.", filename, file_size);
+        fseek(fp, 0, SEEK_SET);        
         lexer->buffer_start = (char *)malloc((size_t)file_size + 1);
-        fread(lexer->buffer_start, sizeof(char), (size_t)file_size, fp);
+        size_t read_size = fread(lexer->buffer_start, sizeof(char), (size_t)file_size, fp);
+        if (read_size != file_size)
+        {
+            write_error("Error reading file \"%s\".", filename);
+            return 1;
+        }
+        write_debug("Opened file \"%s\" with the size of %ld bytes.", filename, file_size);
         lexer->buffer_start[file_size] = 0;
         lexer->buffer_at = lexer->buffer_start;
         fclose(fp);

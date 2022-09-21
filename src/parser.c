@@ -1818,8 +1818,8 @@ static int parse_data(struct Lexer *lexer, struct ASTNode *data_node)
     }
     else
     {
-        if (in_library)
-        {
+        if (in_library && !is_native_type(token.value, token.size))
+        {            
             data_type_node = create_node_str2(NODE_TYPE_DATA_TYPE, lexer, token.value, token.size, current_library_name, current_library_name_size);
         }
         else

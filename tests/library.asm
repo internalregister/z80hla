@@ -3,13 +3,14 @@ single_byte:
 db 100
 
 rand:
-    ld a, random_seed
+    ld hl, (random_seed)
 label:
     nop
     ret
 
 rand2:
-    ld a, random_seed2
+    ld hl, (random_seed2)
+    ld a, (array)
     call rand
     nop
     ret
@@ -25,3 +26,5 @@ random_seed:
 dw 10000
 random_seed2:
 dw 10 * 10
+array:
+db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0

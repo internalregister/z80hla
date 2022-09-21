@@ -862,19 +862,19 @@ int add_data_symbol(char *name, int name_size, char *library_name, int library_n
 	new_data_symbol->library_type = library_type;
 	new_data_symbol->library_type_size = library_type_size;
 
-	if (is_str_equal(type, type_size, "byte")/* && is_str_equal(library_type, library_type_size, "")*/)
+	if (is_str_equal(type, type_size, "byte") && is_str_equal(library_type, library_type_size, ""))
 	{
 		new_data_symbol->is_native_type = TRUE;
 		new_data_symbol->size_of_type = 1;
 		new_data_symbol->structured_type = NULL;
 	}
-	else if (is_str_equal(type, type_size, "word")/* && is_str_equal(library_type, library_type_size, "")*/)
+	else if (is_str_equal(type, type_size, "word") && is_str_equal(library_type, library_type_size, ""))
 	{
 		new_data_symbol->is_native_type = TRUE;
 		new_data_symbol->size_of_type = 2;
 		new_data_symbol->structured_type = NULL;
 	}
-	else if (is_str_equal(type, type_size, "dword")/* && is_str_equal(library_type, library_type_size, "")*/)
+	else if (is_str_equal(type, type_size, "dword") && is_str_equal(library_type, library_type_size, ""))
 	{
 		new_data_symbol->is_native_type = TRUE;
 		new_data_symbol->size_of_type = 4;

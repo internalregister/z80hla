@@ -1248,8 +1248,9 @@ static int second_pass(struct ASTNode *first_node)
                                 {
                                     list_skip_bytes--;
                                 }
+                                
+                                compiler_current_address++;
                             }
-                            compiler_current_address += structured_type->struct_size;
                         }
 
                         data_length++;
@@ -1260,10 +1261,21 @@ static int second_pass(struct ASTNode *first_node)
 
                     if (node->str_size > 0)
                     {
-                        add_data_symbol(node->str_value, node->str_size,
-                            node->str_value2, node->str_size2,
-                            node->children[0]->str_value, node->children[0]->str_size,
-                            node->children[0]->str_value2, node->children[0]->str_size2, data_length);
+                        if (add_data_symbol(node->str_value, node->str_size,
+                                node->str_value2, node->str_size2,
+                                node->children[0]->str_value, node->children[0]->str_size,
+                                node->children[0]->str_value2, node->children[0]->str_size2, data_length))
+                            {
+                                if (node->str_size2 > 0)
+                                {
+                                    write_compiler_error(node->filename, node->file_line, "Error with data %.*s::%.*s", node->str_size2, node->str_value2, node->str_size, node->str_value);
+                                }
+                                else
+                                {
+                                    write_compiler_error(node->filename, node->file_line, "Error with data %.*s", node->str_size, node->str_value);
+                                }
+                                return 1;
+                            }
 
                         if (fp_list != NULL) fprint_data_list(fp_list, node, get_last_data_symbol()->size_of_type * data_length, data_length);
                     }                    

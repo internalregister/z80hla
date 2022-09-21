@@ -171,14 +171,7 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 
-			listing_filename = argv[i];
-			fp_list = fopen(listing_filename, "wt");
-
-			if (!fp_list)
-			{
-				printf("Cannot open file \"%s\" to write\n", listing_filename);
-				return 1;
-			}
+			listing_filename = argv[i];			
 		}
 		else
 		{
@@ -198,6 +191,7 @@ int main(int argc, char *argv[])
 		return 1;
 	}
 	
+	printf("parsing...\n");
 	push_include_file(lexer.filename);
 	struct ASTNode *node = parse(&lexer, NULL, NULL);
 	pop_include_file();
@@ -221,6 +215,15 @@ int main(int argc, char *argv[])
 		#endif
 
 		init_compiler();
+		if (listing_filename != NULL)
+		{
+			fp_list = fopen(listing_filename, "wt");
+			if (!fp_list)
+			{
+				printf("Cannot open file \"%s\" to write\n", listing_filename);
+				return 1;
+			}
+		}
 		if (compile(node))
 		{
 			write_error("Error compiling");
@@ -274,15 +277,15 @@ int main(int argc, char *argv[])
 			fprintf_output_symbols(fp_symbols);
 			fclose(fp_symbols);
 		}
+
+		printf("Compilation successful\n");
 	}
 	else
 	{
 		write_error("Error parsing file");
 	}
 
-	destroy_lexer(&lexer);
-
-	printf("Compilation successful\n");
+	destroy_lexer(&lexer);	
 
 	return 0;
 }

@@ -8,7 +8,7 @@ library Console
 
     function rand()
     {
-        ld a, Console2::random_seed
+        ld hl, (Console2::random_seed)
         label:
         nop
     }
@@ -20,8 +20,9 @@ library Console
 
     function rand2()
     {
-        ld a, Console2::random_seed2
-        call rand
+        ld hl, (Console2::random_seed2)
+        ld a, (array)
+        rand()
         nop
     }
 }
@@ -31,7 +32,7 @@ loop:
     ld a, 120
     ld (Console::single_byte), a
 
-    call Console::rand2
+    Console::rand2()
 
 label:
 
@@ -42,5 +43,10 @@ library Console2
 {
     data word random_seed = 10000
     data word random_other_stuff = 555
-    data word random_seed2 = Console::c_stuff * 10
+    data word random_seed2 = Console::c_stuff * 10    
+}
+
+library Console
+{
+    data byte array[10]
 }
