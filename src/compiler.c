@@ -1141,9 +1141,10 @@ static int second_pass(struct ASTNode *first_node)
                             {
                                 node_value->children[0]->type = NODE_TYPE_EXPRESSION_8;
                                 add_output_element_set_address(0, node_value->children[0]);
-                                compiler_current_address++;
 
                                 if (fp_list != NULL) fprint_db_list(fp_list, node, 0, node_value->children[0], FPRINT_DB_TYPE_BYTE);
+
+                                compiler_current_address++;                                
                             }
                             else if (node_value->children[0]->type == NODE_TYPE_STRING)
                             {
@@ -1173,9 +1174,10 @@ static int second_pass(struct ASTNode *first_node)
                             node_value->children[0]->type = NODE_TYPE_EXPRESSION_16;
                             add_output_element(0, node_value->children[0]);
                             add_output_element_set_address(0, NULL);
-                            compiler_current_address += 2;
 
                             if (fp_list != NULL) fprint_db_list(fp_list, node, 0, node_value->children[0], FPRINT_DB_TYPE_WORD);
+
+                            compiler_current_address += 2;                            
                         }
                         else if (is_str_equal(node->children[0]->str_value, node->children[0]->str_size, "dword"))
                         {
@@ -1190,9 +1192,10 @@ static int second_pass(struct ASTNode *first_node)
                             add_output_element(0, NULL);
                             add_output_element(0, NULL);
                             add_output_element_set_address(0, NULL);
-                            compiler_current_address += 4;
 
                             if (fp_list != NULL) fprint_db_list(fp_list, node, 0, node_value->children[0], FPRINT_DB_TYPE_DWORD);
+
+                            compiler_current_address += 4;                            
                         }
                         else
                         {
@@ -1308,17 +1311,19 @@ static int second_pass(struct ASTNode *first_node)
                         if (is_str_equal(node->children[0]->str_value, node->children[0]->str_size, "byte"))
                         {                            
                             add_output_element_set_address(0, NULL);
-                            compiler_current_address++;
 
                             if (fp_list != NULL) fprint_db_list(fp_list, node, 0, NULL, FPRINT_DB_TYPE_BYTE);
+
+                            compiler_current_address++;                            
                         }
                         else if (is_str_equal(node->children[0]->str_value, node->children[0]->str_size, "word"))
                         {
                             add_output_element(0, NULL);
                             add_output_element_set_address(0, NULL);
-                            compiler_current_address += 2;
 
                             if (fp_list != NULL) fprint_db_list(fp_list, node, 0, NULL, FPRINT_DB_TYPE_WORD);
+
+                            compiler_current_address += 2;                            
                         }
                         else if (is_str_equal(node->children[0]->str_value, node->children[0]->str_size, "dword"))
                         {
@@ -1326,9 +1331,10 @@ static int second_pass(struct ASTNode *first_node)
                             add_output_element(0, NULL);
                             add_output_element(0, NULL);
                             add_output_element_set_address(0, NULL);
-                            compiler_current_address += 4;
 
                             if (fp_list != NULL) fprint_db_list(fp_list, node, 0, NULL, FPRINT_DB_TYPE_DWORD);
+
+                            compiler_current_address += 4;                            
                         }
                         else
                         {
