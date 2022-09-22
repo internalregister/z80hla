@@ -1522,6 +1522,8 @@ static int second_pass(struct ASTNode *first_node)
 char *compiler_output_filename;
 static FILE *compiler_fp_output = NULL;
 
+int bytes_saved = 0;
+
 static void write_output_byte(uint8_t value)
 {
     if (!compiler_fp_output)
@@ -1530,6 +1532,7 @@ static void write_output_byte(uint8_t value)
     }
 
     fwrite(&(value), 1, 1, compiler_fp_output);
+    bytes_saved++;
 }
 
 static int third_pass(struct ASTNode *node)
@@ -1748,7 +1751,7 @@ int compile(struct ASTNode *first_node)
 
     write_debug("Compiler end", 0);
 
-    printf("%d bytes generated\n", output_length - 1);
+    printf("%d bytes generated\n", bytes_saved);
 
     return 0;
 }
