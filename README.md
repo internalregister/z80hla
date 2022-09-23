@@ -126,7 +126,11 @@ There is also code for syntax highlighting plugins for text editors in the folde
 
 ## Extra Resources
 
-In the directory [examples](https://github.com/internalregister/z80hla/tree/master/examples) you can find example programs for the [Nintendo Gameboy](https://github.com/internalregister/z80hla/tree/master/examples/gb), [Sega Master System](https://github.com/internalregister/z80hla/tree/master/examples/sms) and for my own [homebrew videogame console](https://github.com/internalregister/z80hla/tree/master/examples/homebrew_console) ([Link to blog about my first homebrew videogame console](https://internalregister.github.io/2019/03/14/Homebrew-Console.html)).
+In the directory [examples](https://github.com/internalregister/z80hla/tree/master/examples) you can find example programs for several systems:
+* [Nintendo Gameboy](https://github.com/internalregister/z80hla/tree/master/examples/gb)
+* [Sega Master System](https://github.com/internalregister/z80hla/tree/master/examples/sms)
+* [ZX Spectrum](https://github.com/internalregister/z80hla/tree/master/examples/zx_spectrum)
+* [my own homebrew videogame console](https://github.com/internalregister/z80hla/tree/master/examples/homebrew_console) ([Link](https://internalregister.github.io/2019/03/14/Homebrew-Console.html) to blog about my first homebrew videogame console).
 
 ## License
 
