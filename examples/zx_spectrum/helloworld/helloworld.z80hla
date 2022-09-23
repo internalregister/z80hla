@@ -1,0 +1,28 @@
+#output_file "helloworld.sna"
+#include "../zx_sna_header.z80hla"
+
+#origin 0x8000
+ld bc, STRING
+ld de, SCR
+
+forever
+{
+	ld a, (bc)
+	cp 0
+	if (z)
+	{
+		break
+	}
+	rst 0x10
+	inc bc
+	inc de
+}
+
+ret
+	
+const SCR = 16384
+
+data byte STRING = "Hello World!", 13, 0
+
+#include "../zx_sna_footer.z80hla"
+
