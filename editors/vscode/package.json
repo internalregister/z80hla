@@ -2,6 +2,7 @@
     "name": "z80hla",
     "displayName": "z80hla",
     "description": "Z80 high-level assembly",
+    "repository": "https://github.com/internalregister/z80hla/tree/master/editors/vscode",
     "license": "BSD",
     "version": "1.0.0",
     "publisher": "Sérgio Vieira",

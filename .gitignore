@@ -4,6 +4,8 @@ obj/
 build/
 editors/vscode/node_modules/
 
+package-lock.json
+
 output.ast
 output_ast.json
 output_ast_after_first_pass.json

@@ -24,7 +24,7 @@
             "patterns": [
 				{
 					"name": "keyword.control.z80hla",
-					"match": "\\s*(?:((#)\\s*(define|endif|else|ifdef|ifndef|print|origin|output_on|output_off|include_binary|output_file|cpu_type)))\\b"
+					"match": "\\s*(?:((#)\\s*(include|define|endif|else|ifdef|ifndef|print|origin|output_on|output_off|include_binary|output_file|cpu_type)))\\b"
 				},
                 {
                     "name": "keyword.op.z80hla",
