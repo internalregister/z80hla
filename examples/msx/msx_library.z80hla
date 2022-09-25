@@ -1,0 +1,5 @@
+library MSX
+{
+  const CHPUT = 0x00A2
+}
+

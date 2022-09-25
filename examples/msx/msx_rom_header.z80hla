@@ -1,0 +1,9 @@
+#origin 0x4000
+
+data byte = "AB"
+data word = start
+data word = 0x0000
+data word = 0x0000
+data word = 0x0000
+data byte [6]
+

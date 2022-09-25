@@ -130,6 +130,7 @@ In the directory [examples](https://github.com/internalregister/z80hla/tree/mast
 * [Nintendo Gameboy](https://github.com/internalregister/z80hla/tree/master/examples/gb)
 * [Sega Master System](https://github.com/internalregister/z80hla/tree/master/examples/sms)
 * [ZX Spectrum](https://github.com/internalregister/z80hla/tree/master/examples/zx_spectrum)
+* [MSX](https://github.com/internalregister/z80hla/tree/master/examples/msx)
 * [my own homebrew videogame console](https://github.com/internalregister/z80hla/tree/master/examples/homebrew_console) ([Link](https://internalregister.github.io/2019/03/14/Homebrew-Console.html) to blog about my first homebrew videogame console).
 
 ## License

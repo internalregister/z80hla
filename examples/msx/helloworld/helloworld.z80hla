@@ -1,0 +1,26 @@
+#output_file "helloworld.rom"
+
+#include "../msx_rom_header.z80hla"
+
+#include "../msx_library.z80hla"
+
+start:
+  ld hl,message // HL = Character Message Address
+
+  ld a,(hl)
+  or a
+  while(nz)
+  {
+    call MSX::CHPUT
+    inc hl
+    ld a,(hl)
+    or a
+  }
+
+  forever
+  {
+  }
+
+data byte message = 13,"\nHello, World!",0 // Hello World Text (Null-Terminated String)
+
+#include "../msx_rom_footer.z80hla"
