@@ -38,6 +38,9 @@
 
 // #define DEBUG 1
 
+#define Z80HLA_VERSION_HI   "1"
+#define Z80HLA_VERSION_LO   "0"
+
 #define INCLUDE_STACK_MAX   10
 
 #define INCLUDE_ERROR_OVER_MAX_STACK    1

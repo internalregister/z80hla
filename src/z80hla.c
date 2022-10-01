@@ -63,6 +63,7 @@ void print_usage()
 {
 	printf("Usage: z80hla [options] input_file\n\n");
 	printf("Options:\n");
+	printf("-h\t--help\t\t\tShow this information.\n");
 	printf("-o\t--output FILE\t\tSet the default output file.\n");
 	printf("-i\t--include PATH\t\tAdd include path.\n");
 	printf("-c\t--cpu CPU_TYPE\t\tSet CPU type: \"z80\" (default), \"gb\", \"msx\" / \"r800\"\n");
@@ -79,9 +80,10 @@ int main(int argc, char *argv[])
 {
 	char *input_filename = NULL;	
 	char *symbol_filename = NULL;
-	char *listing_filename = NULL;	
+	char *listing_filename = NULL;
 
-	printf("Z80 high-level assembler - Sérgio Vieira 2022\n\n");
+	printf("Z80 high-level assembler v"Z80HLA_VERSION_HI"."Z80HLA_VERSION_LO"\n");
+	printf("Copyright (C) Sérgio Vieira 2022 <internalregister@gmail.com>\n\n");
 
 	if (argc == 1)
 	{
@@ -173,8 +175,19 @@ int main(int argc, char *argv[])
 
 			listing_filename = argv[i];			
 		}
+		else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help"))
+		{
+			print_usage();
+			return 0;
+		}
 		else
 		{
+			if (argv[i][0] == '-')
+			{
+				printf("Error: Invalid option \"%s\"\n", argv[i]);
+				return 1;
+			}
+			
 			input_filename = argv[i];
 		}
 	}
