@@ -16,3 +16,5 @@ output_library_symbols_used.json
 output_structs.json
 output_data.json
 output.bin
+
+z80hla.vcxproj.user
