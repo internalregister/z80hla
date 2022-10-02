@@ -112,6 +112,56 @@ forever
 data byte flag[1]
 ```
 
+**#assembleall_on**  
+**#assembleall_off**
+
+Enables or disables assembling functions and data in libraries not being referenced.
+By default, it is off.
+
+Example:
+```
+; by default #assembleall_off
+
+library Misc
+{
+  function foo()
+  {
+    ld a, foo_data
+  }
+
+  function foo2()
+  {
+    ld a, (another_foo_data)
+  }
+
+  data byte foo_data
+  data byte another_foo_data = 1, 2, 3, 4, 5
+}
+
+foo()
+foo3()
+
+#assembleall_on
+
+library Misc
+{
+  function foo3()
+  {
+    nop
+  }
+
+  function foo4()
+  {
+    ld hl, foo_data2
+  }
+
+  data word foo_data2[10]
+}
+
+; Misc::foo, Misc::foo2, Misc:foo3, Misc:foo4 and Misc::foo_data2 is assembled
+; Misc::foo2 and Misc::another_foo_data are ignored
+```
+
 ## Comments
 
 **;** or **//**
@@ -549,8 +599,14 @@ ld (more_vehicles[5].attributes.max_cargo), hl
 ### Libraries
 
 Libraries contain functions, inlines, data declaration and struct types.
-Their full names are *library name*::*name*. Inside the library where they're declared they can be referenced by their short or full name. Outside the library the full name needs to be used.
+Their full names are *library name*::*name*.  
+Inside the library where they're declared they can be referenced by their short or full name. Outside the library the full name needs to be used.
 
+**library *name* {**  
+***...function|data|const...***  
+**}**
+
+Example:
 ```
 library MyLibrary
 {
@@ -588,7 +644,8 @@ library MyLibrary
 }
 ```
 
-One of the main features of libraries are that functions and data not used are not assembled. Only those used directly or indrectly are assembled, the rest are ignored.
+One of the main features of libraries are that functions and data not used are not assembled unless the directive `#assembleall_on` is used or the corresponding option is used.  
+Only those used directly or indrectly are assembled, the rest are ignored.
 
 ```
 data byte value
@@ -619,6 +676,7 @@ library Misc
 Misc::func1()
 
 ; Misc::func1, Misc::func3 and Misc::value2 will be assembled
+; Misc::value1 and Misc::func2 will be ignored
 ```
 
 

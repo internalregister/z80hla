@@ -113,10 +113,12 @@ If there are no errors, an `output.bin` will be the result.
 
 Here are some extra options you can use when executing the assembler:
 
+- `-h`/`--help` : Show usage information
 - `-o`/`--output` `FILE` : set the output file
 - `-i`/`--include` `PATH` : add an include path
 - `-c`/`--cpu` `CPU` : set a CPU type: `z80` (default), `gb`, `msx` or `r800` (the same as `msx`)
 - `-d`/`--define` `IDENTIFIER` : add a define identifier
+- `-a`/`--assembleall` : Assemble all library symbols and not just the ones referenced
 - `-s`/`--symbols` `FILE` : output a JSON file with all the symbols
 - `-l`/`--list` `FILE` : output a file listing instructions and data without high-level constructs
 
