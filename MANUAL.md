@@ -344,6 +344,18 @@ forever()
 }
 ```
 
+***breakif(cond)***
+
+Jumps out of the current loop under a condition.
+It always uses a `jp` to do so.
+
+```
+forever()
+{
+  ld a, (value)
+  breakif(z)
+}
+```
 
 ### Data declaration
 
