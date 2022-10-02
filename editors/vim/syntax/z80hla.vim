@@ -10,7 +10,8 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 syntax keyword z80hlaConditional  if else
-syntax keyword z80hlaRepeat       while do forever
+syntax keyword z80hlaRepeat       while do forever break breakif
+syntax keyword z80hlaOtherKwords  break breakif 
 syntax keyword z80hlaDeclaration  library function interrupt data struct
 syntax keyword z80hlaInstruction  nop adc add and bit call ccf cp cpd cpdr cpi cpir cpl daa dec di djnz ei ex exx halt im
 syntax keyword z80hlaInstruction  in inc ind indr ini inir jp jr ld ldd lddr ldi ldir neg or otdr otir out outd outi
@@ -48,6 +49,7 @@ highlight default link z80hlaChar String
 highlight default link z80hlaCharDelimiter String
 highlight default link z80hlaEscape Special
 highlight default link z80hlaType Type
+highlight default link z80hlaOtherKwords Keyword
 highlight default link z80hlaDeclaration Keyword
 highlight default link z80hlaRepeat Repeat
 highlight default link z80hlaConditional Conditional

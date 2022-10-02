@@ -36,7 +36,7 @@
                 },
 				{
                     "name": "keyword.control.z80hla",
-                    "match": "\\b(function|inline|if|else|library|data|from|interrupt|const|sizeof|while|do|forever|break|length)\\b"
+                    "match": "\\b(function|inline|if|else|library|data|from|interrupt|const|sizeof|while|do|forever|break|breakif|length)\\b"
                 }, 
                 {
                     "name": "storage.type.z80hla",
