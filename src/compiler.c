@@ -359,6 +359,23 @@ static struct ASTNode *add_main_node_to_end(struct ASTNode *child_node, struct A
     return new_node;
 }
 
+static int check_condition_op(struct ASTNode *node, char *cond, int cond_size)
+{
+    if (cpu_type == CPU_TYPE_GB)
+    {
+        if (is_str_equal(cond, cond_size, "p") ||
+            is_str_equal(cond, cond_size, "m") ||
+            is_str_equal(cond, cond_size, "pe") ||
+            is_str_equal(cond, cond_size, "po"))
+        {
+            write_compiler_error(node->filename, node->file_line, "Condition \"%.*s\" in do is invalid for this cpu type", cond, cond_size);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 static int recursive_first_pass(struct ASTNode *first_node, int *length)
 {
     struct ASTNode *current_node = first_node, *node;    
@@ -556,18 +573,8 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                     *length += inner_length;
                     if_clause_length += inner_length;
                 }
-
-                if (cpu_type == CPU_TYPE_GB)
-                {
-                    if (is_str_equal(node->str_value, node->str_size, "p") ||
-                        is_str_equal(node->str_value, node->str_size, "m") ||
-                        is_str_equal(node->str_value, node->str_size, "pe") ||
-                        is_str_equal(node->str_value, node->str_size, "po"))
-                    {
-                        write_compiler_error(node->filename, node->file_line, "Condition \"%.*s\" in if is invalid for this cpu type", node->str_size, node->str_value);
-                        return 1;
-                    }
-                }
+                
+                if (check_condition_op(node, node->str_value, node->str_size)) { return 1; }
 
                 if (if_clause_length > 127)
                 {
@@ -645,17 +652,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
 
                 struct ASTNode *jp_node = NULL;
                 
-                if (cpu_type == CPU_TYPE_GB)
-                {
-                    if (is_str_equal(node->str_value, node->str_size, "p") ||
-                        is_str_equal(node->str_value, node->str_size, "m") ||
-                        is_str_equal(node->str_value, node->str_size, "pe") ||
-                        is_str_equal(node->str_value, node->str_size, "po"))
-                    {
-                        write_compiler_error(node->filename, node->file_line, "Condition \"%.*s\" in while is invalid for this cpu type", node->str_size, node->str_value);
-                        return 1;
-                    }
-                }
+                if (check_condition_op(node, node->str_value, node->str_size)) { return 1; }
 
                 if (inner_while_length < 124)
                 {
@@ -729,17 +726,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
 
                 pop_loop_label();
 
-                if (cpu_type == CPU_TYPE_GB)
-                {
-                    if (is_str_equal(node->str_value, node->str_size, "p") ||
-                        is_str_equal(node->str_value, node->str_size, "m") ||
-                        is_str_equal(node->str_value, node->str_size, "pe") ||
-                        is_str_equal(node->str_value, node->str_size, "po"))
-                    {
-                        write_compiler_error(node->filename, node->file_line, "Condition \"%.*s\" in do is invalid for this cpu type", node->str_size, node->str_value);
-                        return 1;
-                    }
-                }
+                if (check_condition_op(node, node->str_value, node->str_size)) { return 1; }
 
                 struct ASTNode *jp_node = NULL;
                 if (inner_do_length < 127)
@@ -836,6 +823,26 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 struct ASTNode *last_node = current_node->children[1];
 
                 struct ASTNode *new_node = add_main_node_to_end(create_jp_node(label), current_node);
+                new_node->children_count = 2;
+                new_node->children[1] = last_node;
+
+                break;
+            }
+            case NODE_TYPE_BREAKIF:
+            {
+                char *label = peek_loop_label();
+                if (label == NULL)
+                {
+                    write_compiler_error(node->filename, node->file_line, "breakif not inside of loop", 0);
+                    return 1;
+                }
+
+                if (check_condition_op(node, node->str_value, node->str_size)) { return 1; }
+
+                struct ASTNode *last_node = current_node->children[1];
+
+                struct ASTNode *jp_node = create_jp_cond_node(node->str_value, node->str_size, label);
+                struct ASTNode *new_node = add_main_node_to_end(jp_node, current_node);
                 new_node->children_count = 2;
                 new_node->children[1] = last_node;
 

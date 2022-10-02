@@ -725,6 +725,10 @@ static int get_token(struct Lexer *lexer, struct Token *token, BOOL skip_newline
                     {
                         token->type = TOKEN_TYPE_BREAK;
                     }
+                    else if (is_str_equal_token_value(token, "breakif"))
+                    {
+                        token->type = TOKEN_TYPE_BREAKIF;
+                    }
                     else if (is_str_equal_token_value(token, "sizeof"))
                     {
                         token->type = TOKEN_TYPE_SIZEOF;

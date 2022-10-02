@@ -93,6 +93,10 @@ def testIf():
     """If          """
     return standardTest("if")
 
+def testBreakif():
+    """Breakif     """
+    return standardTest("breakif")
+
 if __name__ == "__main__":
     print("Z80HLA Tests\n")
     testFunctions = [obj for name,obj in inspect.getmembers(sys.modules[__name__]) if (inspect.isfunction(obj) and name.startswith('test'))]

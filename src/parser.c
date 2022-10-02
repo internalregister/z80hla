@@ -195,6 +195,7 @@ char *node_type_names[] = {
     "NODE_TYPE_DO",
     "NODE_TYPE_FOREVER",
     "NODE_TYPE_BREAK",
+    "NODE_TYPE_BREAKIF",
     "NODE_TYPE_STRING",
     "NODE_TYPE_OUTPUT_ON",
     "NODE_TYPE_OUTPUT_OFF",
@@ -1472,6 +1473,37 @@ static int parse_block(struct Lexer *lexer, struct ASTNode *parent_node, struct 
         case TOKEN_TYPE_BREAK:
         {
             ast_node = create_node(NODE_TYPE_BREAK, lexer);
+
+            break;
+        }
+        case TOKEN_TYPE_BREAKIF:
+        {
+            ast_node = create_node(NODE_TYPE_BREAKIF, lexer);
+
+            struct Token inner_token;
+
+            if (get_next_token(lexer, &inner_token, TRUE)) return 1;
+            if (inner_token.type != TOKEN_TYPE_LPAREN)
+            {
+                write_compiler_error(lexer->filename, lexer->current_line, "Expected \"(\" in breakif statement, found \"%.*s\"", inner_token.size, inner_token.value);
+                return 1;
+            }
+
+            if (get_next_token(lexer, &inner_token, TRUE)) return 1;
+            if (inner_token.type != TOKEN_TYPE_COND && (inner_token.type != TOKEN_TYPE_REGISTER || !is_str_equal(inner_token.value, inner_token.size, "c")))
+            {
+                write_compiler_error(lexer->filename, lexer->current_line, "Expected condition in breakif statement, found \"%.*s\"", inner_token.size, inner_token.value);
+                return 1;
+            }
+            ast_node->str_value = inner_token.value;
+            ast_node->str_size = inner_token.size;
+
+            if (get_next_token(lexer, &inner_token, TRUE)) return 1;
+            if (inner_token.type != TOKEN_TYPE_RPAREN)
+            {
+                write_compiler_error(lexer->filename, lexer->current_line, "Expected \")\" after condition in breakif statement, found \"%.*s\"", inner_token.size, inner_token.value);
+                return 1;
+            }
 
             break;
         }
