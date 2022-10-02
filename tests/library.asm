@@ -28,3 +28,11 @@ random_seed2:
 dw 10 * 10
 array:
 db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+
+not_used:
+    ld a, 55
+    ld a, notused_data
+    ret
+
+notused_data:
+    db 10, 100

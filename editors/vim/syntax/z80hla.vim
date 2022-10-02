@@ -22,7 +22,7 @@ syntax keyword z80hlaRegister     a b c d e f h l af af' bc de hl i r ix iy ixl 
 syntax keyword z80hlaCond         nc m p z nz pe po
 syntax keyword z80hlaType         byte word dword
 
-syntax region	z80hlaBuiltin	start="\s*\zs\(%:\|#\)\s*\(include\>\|print\>\|define\>\|ifdef\>\|ifndef\>\|endif\>\|output_on\>\|output_off\>\|include_binary\>\|else\>\|cpu_type\>\|output_file\>\)" end="\s"
+syntax region	z80hlaBuiltin	start="\s*\zs\(%:\|#\)\s*\(include\>\|print\>\|define\>\|ifdef\>\|ifndef\>\|endif\>\|output_on\>\|output_off\>\|include_binary\>\|else\>\|cpu_type\>\|output_file\>\|assembleall_on\>\|assembleall_off\>\)" end="\s"
 
 syntax match z80hlaLabel          "[a-zA-Z_][a-zA-Z_0-9]*:"
 syntax match z80hlaNumber         "\v<\d%(_?\d)*"

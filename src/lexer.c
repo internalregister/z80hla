@@ -598,6 +598,14 @@ static int get_token(struct Lexer *lexer, struct Token *token, BOOL skip_newline
             {
                 token->type = TOKEN_TYPE_DEFINE;
             }
+            else if (is_str_equal_token_value(token, "#assembleall_on"))
+            {
+                token->type = TOKEN_TYPE_ASSEMBLEALL_ON;
+            }
+            else if (is_str_equal_token_value(token, "#assembleall_off"))
+            {
+                token->type = TOKEN_TYPE_ASSEMBLEALL_OFF;
+            }
             else
             {
                 write_compiler_error(lexer->filename, lexer->current_line, "Unexpected token \"%.*s\"", token->size, token->value);

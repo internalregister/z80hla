@@ -157,7 +157,9 @@ enum TokenType
     TOKEN_TYPE_IFNDEF,
     TOKEN_TYPE_IFDEF_ELSE,
     TOKEN_TYPE_IFDEF_ENDIF,
-    TOKEN_TYPE_DEFINE
+    TOKEN_TYPE_DEFINE,
+    TOKEN_TYPE_ASSEMBLEALL_ON,
+    TOKEN_TYPE_ASSEMBLEALL_OFF
 };
 
 struct Token
@@ -220,7 +222,9 @@ enum NodeType
     NODE_TYPE_OUTPUT_OFF,
     NODE_TYPE_INCLUDE_BINARY,
     NODE_TYPE_SET_OUTPUT_FILE,
-    NODE_TYPE_SET_CPU_TYPE
+    NODE_TYPE_SET_CPU_TYPE,
+    NODE_TYPE_ASSEMBLEALL_ON,
+    NODE_TYPE_ASSEMBLEALL_OFF
 };
 
 #define MAX_AST_NODE_CHILDREN   16
@@ -397,6 +401,8 @@ void revert_to_duplicate_ifdef_expect();
 
 extern int compiler_current_address;
 extern char *compiler_output_filename;
+
+extern BOOL assemble_all;
 
 void init_compiler();
 int compile(struct ASTNode *first_node);

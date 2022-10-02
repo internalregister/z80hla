@@ -68,6 +68,7 @@ void print_usage()
 	printf("-i\t--include PATH\t\tAdd include path.\n");
 	printf("-c\t--cpu CPU_TYPE\t\tSet CPU type: \"z80\" (default), \"gb\", \"msx\" / \"r800\"\n");
 	printf("-d\t--define IDENTIFIER\tAdd define identifier\n");
+	printf("-a\t--assembleall\t\tAssemble all library symbols and not just the ones referenced\n");
 	printf("-s\t--symbols FILE\t\tOutput symbols JSON file\n");
 	printf("-l\t--list FILE\t\tOuput listing of instructions without high-level constructs\n");
 	printf("\n");
@@ -174,6 +175,10 @@ int main(int argc, char *argv[])
 			}
 
 			listing_filename = argv[i];			
+		}
+		else if (!strcmp(argv[i], "-a") || !strcmp(argv[i], "--assembleall"))
+		{
+			assemble_all = TRUE;
 		}
 		else if (!strcmp(argv[i], "-h") || !strcmp(argv[i], "--help"))
 		{

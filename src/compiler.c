@@ -853,6 +853,16 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 cpu_type = (enum CPUType)node->num_value;
                 break;
             }
+            case NODE_TYPE_ASSEMBLEALL_ON:
+            {
+                assemble_all = TRUE;
+                break;
+            }
+            case NODE_TYPE_ASSEMBLEALL_OFF:
+            {
+                assemble_all = FALSE;
+                break;
+            }
             default:
                 break;
         }
@@ -1042,6 +1052,8 @@ static int second_pass(struct ASTNode *first_node)
     write_debug("Compiler second pass...", 0);
 
     compiler_current_address = 0;
+
+    assemble_all = FALSE;
 
     while (current_node != NULL && current_node->children_count > 0)
     {
@@ -1517,6 +1529,16 @@ static int second_pass(struct ASTNode *first_node)
                 cpu_type = (enum CPUType)node->num_value;
                 break;
             }
+            case NODE_TYPE_ASSEMBLEALL_ON:
+            {
+                assemble_all = TRUE;
+                break;
+            }
+            case NODE_TYPE_ASSEMBLEALL_OFF:
+            {
+                assemble_all = FALSE;
+                break;
+            }
             default:
                 break;
         }
@@ -1528,6 +1550,8 @@ static int second_pass(struct ASTNode *first_node)
 
 char *compiler_output_filename;
 static FILE *compiler_fp_output = NULL;
+
+BOOL assemble_all = FALSE;
 
 int bytes_saved = 0;
 
@@ -1746,7 +1770,11 @@ int compile(struct ASTNode *first_node)
 
     int res = 0;
     res = third_pass(first_node);
-    fclose(compiler_fp_output);
+    if (compiler_fp_output != NULL)
+    {
+        fclose(compiler_fp_output);
+    }
+
     if (res)
     {
         if (remove(compiler_output_filename))
