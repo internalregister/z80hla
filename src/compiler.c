@@ -1045,7 +1045,7 @@ static void fprint_data_list(FILE *fp, struct ASTNode *node, int size, int lengt
     fprintf(fp, ") = %d\n", length);
 }
 
-static int compile_data_init(char *type_name, int type_name_size, struct StructuredType *structured_type, struct ASTNode *node, struct ASTNode *node_expression, int *data_length)
+static int compile_data_init(char *type_name, int type_name_size, struct StructuredType *structured_type, struct ASTNode *node, struct ASTNode *node_expression, int *data_length, BOOL allow_string)
 {
     if (is_str_equal(type_name, type_name_size, "byte"))
     {
@@ -1060,6 +1060,12 @@ static int compile_data_init(char *type_name, int type_name_size, struct Structu
         }
         else if (node_expression->type == NODE_TYPE_STRING)
         {
+            if (!allow_string)
+            {
+                write_compiler_error(node->filename, node->file_line, "Expression expected in data initializer", 0);
+                return 1;
+            }
+
             for(int i = 0; i < node_expression->str_size; i++)
             {
                 add_output_element_set_address(node_expression->str_value[i], NULL);
@@ -1071,7 +1077,6 @@ static int compile_data_init(char *type_name, int type_name_size, struct Structu
         }
         else
         {
-            write_compiler_error(node->filename, node->file_line, "Type: %d", node_expression->type);
             write_compiler_error(node->filename, node->file_line, "Expression or string literal expected in data initializer", 0);
             return 1;
         }
@@ -1285,7 +1290,7 @@ static int second_pass(struct ASTNode *first_node)
                     struct ASTNode *node_value = node->children[1];
                     while (node_value != NULL)
                     {                  
-                        if (compile_data_init(node->children[0]->str_value, node->children[0]->str_size, structured_type, node, node_value->children[0], &data_length)) { return 1; }
+                        if (compile_data_init(node->children[0]->str_value, node->children[0]->str_size, structured_type, node, node_value->children[0], &data_length, TRUE)) { return 1; }
                         node_value = node_value->children[1];
                     }
 
@@ -1340,7 +1345,7 @@ static int second_pass(struct ASTNode *first_node)
                         if (node->children[1]->children_count == 2)
                         {
                             // of
-                            if (compile_data_init(node->children[0]->str_value, node->children[0]->str_size, structured_type, node, node->children[1]->children[1], NULL)) { return 1; }
+                            if (compile_data_init(node->children[0]->str_value, node->children[0]->str_size, structured_type, node, node->children[1]->children[1], NULL, FALSE)) { return 1; }
                         }
                         else
                         {
