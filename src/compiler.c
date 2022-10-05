@@ -1163,7 +1163,7 @@ static int second_pass(struct ASTNode *first_node)
 
                                 if (fp_list != NULL) fprint_db_list(fp_list, node, 0, node_value->children[0], FPRINT_DB_TYPE_BYTE);
 
-                                compiler_current_address++;                                
+                                compiler_current_address++;
                             }
                             else if (node_value->children[0]->type == NODE_TYPE_STRING)
                             {

@@ -1833,6 +1833,34 @@ static struct ASTNode *parse_struct_init(struct Lexer *lexer)
     return struct_init_node;
 }
 
+static int parse_data_init(struct Lexer *lexer, struct ASTNode **expression_node)
+{
+    struct Token token;
+
+    if (peek_next_token(lexer, &token, FALSE)) { return 1; }
+    if (token.type == TOKEN_TYPE_LCURLY)
+    {
+        *expression_node = parse_struct_init(lexer);
+        if (*expression_node == NULL) { return 1; }
+    }
+    else if (token.type == TOKEN_TYPE_STRING)
+    {
+        *expression_node = create_node_str(NODE_TYPE_STRING, lexer, token.value, token.size);
+        get_next_token(lexer, &token, FALSE);
+    }
+    else
+    {
+        *expression_node = parse_expression(lexer);
+        if (*expression_node == NULL)
+        {
+            write_compiler_error(lexer->filename, lexer->current_line, "Expected expression, found \"%.*s\"", token.size, token.value);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 static int parse_data(struct Lexer *lexer, struct ASTNode *data_node)
 {
     struct Token token;
@@ -1889,32 +1917,15 @@ static int parse_data(struct Lexer *lexer, struct ASTNode *data_node)
         return 1;
     }
 
+    data_node->children_count = 2;
+
     if (token.type == TOKEN_TYPE_EQUALS)
     {
         // Initialized data
         struct ASTNode *expression_node = NULL, *data_value_node = NULL, *last_data_value_node = NULL;
         do
         {
-            if (peek_next_token(lexer, &token, FALSE)) { return 1; }
-            if (token.type == TOKEN_TYPE_LCURLY)
-            {
-                expression_node = parse_struct_init(lexer);
-                if (expression_node == NULL) { return 1; }
-            }
-            else if (token.type == TOKEN_TYPE_STRING)
-            {
-                expression_node = create_node_str(NODE_TYPE_STRING, lexer, token.value, token.size);
-                get_next_token(lexer, &token, FALSE);
-            }
-            else
-            {
-                expression_node = parse_expression(lexer);
-                if (expression_node == NULL)
-                {
-                    write_compiler_error(lexer->filename, lexer->current_line, "Expected expression, found \"%.*s\"", token.size, token.value);
-                    return 1;
-                }
-            }            
+            if (parse_data_init(lexer, &expression_node)) { return 1; }
 
             data_value_node = create_node(NODE_TYPE_DATA_VALUE, lexer);
             data_value_node->children_count = 2;
@@ -1977,6 +1988,17 @@ static int parse_data(struct Lexer *lexer, struct ASTNode *data_node)
             }
 
             if (get_next_token(lexer, &token, FALSE)) { return 1; }
+            if (token.type == TOKEN_TYPE_OF)
+            {
+                struct ASTNode *expression_node = NULL;
+                if (parse_data_init(lexer, &expression_node)) { return 1; }
+
+                data_node->children[2] = expression_node;
+                data_node->children_count = 3;
+
+                if (get_next_token(lexer, &token, FALSE)) { return 1; }
+            }
+            
             if (token.type != TOKEN_TYPE_NEWLINE)
             {
                 write_compiler_error(lexer->filename, lexer->current_line, "Expected new line, found \"%.*s\"", token.size, token.value);
@@ -2007,9 +2029,7 @@ static int parse_data(struct Lexer *lexer, struct ASTNode *data_node)
     {
         write_compiler_error(lexer->filename, lexer->current_line, "Expected \"=\" or \"[\" or \"from\", found \"%.*s\"", token.size, token.value);
         return 1;
-    }
-    
-    data_node->children_count = 2;
+    }    
 
     in_symbol = FALSE;
 
