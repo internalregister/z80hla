@@ -464,6 +464,20 @@ data word score       ; 2 bytes named "score"
 data byte table[100]  ; 100 bytes name "table"
 ```
 
+**data *type* *[name]* [*expression*] of *expression***  
+
+Declare array of data.
+
+Example:
+```
+data byte [20] of 0xFF                  ; 20 bytes of 0xFF
+data CustomStructType table[100] of {
+  value = 100
+  innerStruct = {
+    velocity = 10
+  }
+}                                       ; 100 instances of CustomStructType with custom initialization
+```
 
 **data *type* *[name]* from *string***
 

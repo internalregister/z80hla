@@ -90,7 +90,7 @@ This assembler was designed simply as a hobby project, inspired in part by the [
 
 It's written in C having only the standard library as a dependency.  
 
-It was originally initially only intended to be used in my own projects for my own Z80 systems, however I made it compatible with a wider spectrum of Z80 CPUs and decided to make open-source and available to anyone who for some reason would wish to use such a tool.  
+It was originally only intended to be used in my own projects for my own Z80 systems, however I made it compatible with a wider spectrum of Z80 CPUs and decided to make open-source and available to anyone who for some reason would wish to use such a tool.  
 
 ## Building it
 

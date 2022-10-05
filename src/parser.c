@@ -1993,8 +1993,8 @@ static int parse_data(struct Lexer *lexer, struct ASTNode *data_node)
                 struct ASTNode *expression_node = NULL;
                 if (parse_data_init(lexer, &expression_node)) { return 1; }
 
-                data_node->children[2] = expression_node;
-                data_node->children_count = 3;
+                data_size_node->children[1] = expression_node;
+                data_size_node->children_count = 2;
 
                 if (get_next_token(lexer, &token, FALSE)) { return 1; }
             }

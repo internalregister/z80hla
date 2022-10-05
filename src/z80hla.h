@@ -246,6 +246,8 @@ struct ASTNode
     int file_line;
 };
 
+BOOL is_node_expression_type(enum NodeType node_type);
+
 // Lexer
 
 int init_lexer(struct Lexer *lexer, char *filename);

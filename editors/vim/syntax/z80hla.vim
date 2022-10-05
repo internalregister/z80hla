@@ -12,7 +12,7 @@ set cpo&vim
 syntax keyword z80hlaConditional  if else
 syntax keyword z80hlaRepeat       while do forever break breakif
 syntax keyword z80hlaOtherKwords  break breakif 
-syntax keyword z80hlaDeclaration  library function interrupt data struct
+syntax keyword z80hlaDeclaration  library function interrupt data struct from of
 syntax keyword z80hlaInstruction  nop adc add and bit call ccf cp cpd cpdr cpi cpir cpl daa dec di djnz ei ex exx halt im
 syntax keyword z80hlaInstruction  in inc ind indr ini inir jp jr ld ldd lddr ldi ldir neg or otdr otir out outd outi
 syntax keyword z80hlaInstruction  pop push res ret reti retn rl rla rlc rlca rld rr rra rrc rrca rrd rst sbc scf set

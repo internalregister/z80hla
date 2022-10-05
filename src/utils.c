@@ -149,3 +149,11 @@ void filename_add_path(char *dst, char *filename, char *path)
     } while (filename[0] != '\0');
     dst[0] = '\0';
 }
+
+BOOL is_node_expression_type(enum NodeType node_type)
+{
+    return node_type == NODE_TYPE_EXPRESSION || node_type == NODE_TYPE_EXPRESSION_8 ||
+        node_type == NODE_TYPE_EXPRESSION_8c || node_type == NODE_TYPE_EXPRESSION_8_REL_CUR_ADDRESS ||
+        node_type == NODE_TYPE_EXPRESSION_16 || node_type == NODE_TYPE_EXPRESSION_32 ||
+        node_type == NODE_TYPE_EXPRESSION_3;
+}
