@@ -420,7 +420,20 @@ static int get_token(struct Lexer *lexer, struct Token *token, BOOL skip_newline
         case ':': token->type = TOKEN_TYPE_COLON; break;
         case '=': token->type = TOKEN_TYPE_EQUALS; break;
         case '$': token->type = TOKEN_TYPE_DOLLAR; break;
-        case '.': token->type = TOKEN_TYPE_DOT; break;
+        case '.':
+        {
+            if (lexer->buffer_at[1] == '|')
+            {
+                token->size++;
+                lexer->buffer_at++;
+                token->type = TOKEN_TYPE_DOT_PIPE;
+            }
+            else
+            {
+                token->type = TOKEN_TYPE_DOT;
+            }
+            break;
+        }
         case '\n': token->type = TOKEN_TYPE_NEWLINE; lexer->current_line++; break;
         case '<':
         {

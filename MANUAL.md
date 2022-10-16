@@ -590,7 +590,7 @@ data Vehicle more_vehicles[10]
 
 Getting the field address of data.
 
-**data.*field*|*field[index]*...**
+**data.*field*|*field[index]*...**  
 
 Getting the field relative address of a type
 
@@ -606,6 +606,28 @@ ld (more_vehicles[5].attributes.max_cargo), hl
 
 ; relative address of a field of a type
 #print Vehicle.type   ; 0
+```
+
+Using `.` and `.|` separators:  
+The `.|` is similar to the `.` separator, the difference is that it doesn't add the address to anything before it.  
+The address of `a.b.c` is the address of `a` added to the relative address of `b` inside `a` added to the relative address of `c` inside `b`.  
+The address of `a.b.|c` is simply the relative address of `c` inside `b`.
+This is useful when in the code we're navigating inside the structure elements in structures inside of other structures.
+
+Example
+```
+ld bc, 0x1000
+ld ix, more_vehicles
+ld de, sizeof(Vehicle)
+ld h, length(more_vehicles)
+do
+{
+  ; get the value of airplane.wing_span inside each more_vehicles
+  ld a, (ix + more_vehicles.|airplane.wing_span)
+  out (c), a
+  add ix, de
+  dec h
+} while(nz)
 ```
 
 

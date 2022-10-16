@@ -355,7 +355,7 @@ static int parse_expression_identifier(struct Lexer *lexer, struct ASTNode **out
 
     if (peek_next_token(lexer, &token, TRUE)) return 1;
     struct ASTNode *last_identifier_node = expression_node, *last_parent_node = NULL;
-    while(token.type == TOKEN_TYPE_DOT)
+    while(token.type == TOKEN_TYPE_DOT || token.type == TOKEN_TYPE_DOT_PIPE)
     {
         if (get_next_token(lexer, &token, TRUE)) return 1;
 

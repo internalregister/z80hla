@@ -1,0 +1,37 @@
+struct StructTest {
+    byte b1, b2
+    word w1
+    byte b3
+    dword dw1
+    struct {
+        word w2, w3
+        byte b4
+    } innerStruct
+}
+
+data StructTest structInstance[2]
+
+ld hl, StructTest.w1
+ld hl, StructTest.innerStruct.b4
+ld hl, structInstance[0].innerStruct.b4
+ld hl, structInstance[1].innerStruct.b4
+ld hl, structInstance[1].|innerStruct.b4
+ld hl, structInstance[1].innerStruct.|b4
+
+union UnionTest {
+    byte b1
+    dword dw1
+    word w1
+    struct {
+        byte b1, b2
+        word w1, w2, w3
+    } struct1
+}
+
+data UnionTest unionInstance = {
+    struct1 = {
+        w2 = 100
+    }
+}
+
+ld hl, unionInstance.struct1.w1

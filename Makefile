@@ -12,7 +12,7 @@ SOURCES = $(shell find $(SRC_PATH) -name '*.$(SRC_EXT)' | sort -k 1nr | cut -f2-
 OBJECTS = $(SOURCES:$(SRC_PATH)/%.$(SRC_EXT)=$(BUILD_PATH)/%.o)
 DEPS = $(OBJECTS:.o=.d)
 
-COMPILE_FLAGS = -Wall -g
+COMPILE_FLAGS = -Wall -O2
 INCLUDES = 
 LIBS =
 

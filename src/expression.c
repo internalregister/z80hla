@@ -244,48 +244,64 @@ int resolve_expression(struct ASTNode *node, int64_t *result)
             }
             case '.':
             {
+                BOOL clear_address = FALSE;
+                if (is_str_equal(node->str_value, node->str_size, ".|"))
+                {
+                    clear_address = TRUE;
+                }
+
+                int64_t address = 0;
+
+                struct StructuredType *structured_type = NULL;
+
                 struct ASTNode *first_identifier_node = node->children[0];
                 struct DataSymbol *data_symbol = get_data_symbol(first_identifier_node->str_value, first_identifier_node->str_size, first_identifier_node->str_value2, first_identifier_node->str_size2);
-                if (data_symbol == NULL)
+                if (data_symbol != NULL)
                 {
-                    if (first_identifier_node->str_size2 == 0)
-                    {
-                        write_compiler_error(first_identifier_node->filename, first_identifier_node->file_line, "Data symbol \"%.*s\" not found", first_identifier_node->str_size, first_identifier_node->str_value);
-                    }
-                    else
-                    {
-                        write_compiler_error(first_identifier_node->filename, first_identifier_node->file_line, "Data symbol \"%.*s::%.*s\" not found", first_identifier_node->str_size2, first_identifier_node->str_value2, first_identifier_node->str_size, first_identifier_node->str_value);
-                    }
-                    return 1;
-                }
-                int64_t address = 0;
-                get_constant(first_identifier_node->str_value2, first_identifier_node->str_size2, first_identifier_node->str_value, first_identifier_node->str_size, &address);
+                    get_constant(first_identifier_node->str_value2, first_identifier_node->str_size2, first_identifier_node->str_value, first_identifier_node->str_size, &address);
 
-                if (data_symbol->is_native_type)
-                {
-                    if (first_identifier_node->str_size2 == 0)
+                    if (data_symbol->is_native_type)
                     {
-                        write_compiler_error(first_identifier_node->filename, first_identifier_node->file_line, "Data symbol \"%.*s\" is not a structure", first_identifier_node->str_size, first_identifier_node->str_value);
-                    }
-                    else
-                    {
-                        write_compiler_error(first_identifier_node->filename, first_identifier_node->file_line, "Data symbol \"%.*s::%.*s\" is not a structure", first_identifier_node->str_size2, first_identifier_node->str_value2, first_identifier_node->str_size, first_identifier_node->str_value);
-                    }
-                    return 1;
-                }
-
-                struct StructuredType *structured_type = data_symbol->structured_type;
-
-                if (first_identifier_node->children_count == 1 && first_identifier_node->children[0]->type == NODE_TYPE_INDEX)
-                {
-                    int64_t index;
-                    resolve_expression(first_identifier_node->children[0]->children[0], &index);
-                    if (index < -1 || index > data_symbol->length - 1)
-                    {
-                        write_compiler_error(first_identifier_node->filename, first_identifier_node->file_line, "Invalid index %"PRId64" for data symbol \"%.*s\"", index, first_identifier_node->str_size, first_identifier_node->str_value);
+                        if (first_identifier_node->str_size2 == 0)
+                        {
+                            write_compiler_error(first_identifier_node->filename, first_identifier_node->file_line, "Data symbol \"%.*s\" is not a structure", first_identifier_node->str_size, first_identifier_node->str_value);
+                        }
+                        else
+                        {
+                            write_compiler_error(first_identifier_node->filename, first_identifier_node->file_line, "Data symbol \"%.*s::%.*s\" is not a structure", first_identifier_node->str_size2, first_identifier_node->str_value2, first_identifier_node->str_size, first_identifier_node->str_value);
+                        }
                         return 1;
                     }
-                    address += index * structured_type->struct_size;
+
+                    structured_type = data_symbol->structured_type;
+
+                    if (first_identifier_node->children_count == 1 && first_identifier_node->children[0]->type == NODE_TYPE_INDEX)
+                    {
+                        int64_t index;
+                        resolve_expression(first_identifier_node->children[0]->children[0], &index);
+                        if (index < -1 || index > data_symbol->length - 1)
+                        {
+                            write_compiler_error(first_identifier_node->filename, first_identifier_node->file_line, "Invalid index %"PRId64" for data symbol \"%.*s\"", index, first_identifier_node->str_size, first_identifier_node->str_value);
+                            return 1;
+                        }
+                        address += index * structured_type->struct_size;
+                    }
+                }
+                else
+                {
+                    structured_type = get_structured_type(first_identifier_node->str_value, first_identifier_node->str_size, first_identifier_node->str_value2, first_identifier_node->str_size2);
+                    if (structured_type == NULL)
+                    {
+                        if (first_identifier_node->str_size2 == 0)
+                        {
+                            write_compiler_error(first_identifier_node->filename, first_identifier_node->file_line, "Data symbol or type \"%.*s\" not found", first_identifier_node->str_size, first_identifier_node->str_value);
+                        }
+                        else
+                        {
+                            write_compiler_error(first_identifier_node->filename, first_identifier_node->file_line, "Data symbol or type \"%.*s::%.*s\" not found", first_identifier_node->str_size2, first_identifier_node->str_value2, first_identifier_node->str_size, first_identifier_node->str_value);
+                        }
+                        return 1;
+                    }
                 }
                 
                 struct StructElement *struct_element = NULL;
@@ -293,9 +309,21 @@ int resolve_expression(struct ASTNode *node, int64_t *result)
                 BOOL leave = TRUE;
                 do
                 {
+                    if (clear_address)
+                    {
+                        address = 0;
+                        clear_address = FALSE;
+                    }
+
                     if (is_str_equal(current_expression_node->str_value, current_expression_node->str_size, "."))
                     {
                         current_identifier_node = current_expression_node->children[0];
+                        leave = FALSE;
+                    }
+                    else if (is_str_equal(current_expression_node->str_value, current_expression_node->str_size, ".|"))
+                    {
+                        current_identifier_node = current_expression_node->children[0];                        
+                        clear_address = TRUE;
                         leave = FALSE;
                     }
                     else

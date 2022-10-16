@@ -135,6 +135,10 @@ In the directory [examples](https://github.com/internalregister/z80hla/tree/mast
 * [MSX](https://github.com/internalregister/z80hla/tree/master/examples/msx)
 * [my own homebrew videogame console](https://github.com/internalregister/z80hla/tree/master/examples/homebrew_console) ([Link](https://internalregister.github.io/2019/03/14/Homebrew-Console.html) to blog about my first homebrew videogame console).
 
+## Change Log
+
+You can find the change log [here](https://github.com/internalregister/z80hla/tree/master/CHANGELOG.md).
+
 ## License
 
 Z80HLA is licensed under a 2-clause BSD license
