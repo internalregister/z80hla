@@ -7,7 +7,7 @@
 * new instruction `breakif`
 * new directive `#assembleall_on` and `#assembleall_off`
 * new data declaration with `of` keyword
-* new operator `.|`
+* new separator `.|`
 * allow addresses using struct types
 
 ### Changed
