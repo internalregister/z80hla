@@ -1,3 +1,4 @@
+#jrinloops_on
 
 ld bc, 0x1000
 ld a, 100

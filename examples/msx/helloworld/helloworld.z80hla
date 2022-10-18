@@ -7,14 +7,13 @@
 start:
   ld hl,message // HL = Character Message Address
 
-  ld a,(hl)
-  or a
-  while(nz)
+  forever
   {
-    call MSX::CHPUT
-    inc hl
     ld a,(hl)
     or a
+    breakif(z)
+    call MSX::CHPUT
+    inc hl    
   }
 
   forever

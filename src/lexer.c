@@ -619,6 +619,14 @@ static int get_token(struct Lexer *lexer, struct Token *token, BOOL skip_newline
             {
                 token->type = TOKEN_TYPE_ASSEMBLEALL_OFF;
             }
+            else if (is_str_equal_token_value(token, "#jrinloops_on"))
+            {
+                token->type = TOKEN_TYPE_JRINLOOPS_ON;
+            }
+            else if (is_str_equal_token_value(token, "#jrinloops_off"))
+            {
+                token->type = TOKEN_TYPE_JRINLOOPS_OFF;
+            }
             else
             {
                 write_compiler_error(lexer->filename, lexer->current_line, "Unexpected token \"%.*s\"", token->size, token->value);

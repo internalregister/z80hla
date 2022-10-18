@@ -161,7 +161,9 @@ enum TokenType
     TOKEN_TYPE_ASSEMBLEALL_ON,
     TOKEN_TYPE_ASSEMBLEALL_OFF,
     TOKEN_TYPE_OF,
-    TOKEN_TYPE_DOT_PIPE
+    TOKEN_TYPE_DOT_PIPE,
+    TOKEN_TYPE_JRINLOOPS_ON,
+    TOKEN_TYPE_JRINLOOPS_OFF,
 };
 
 struct Token
@@ -226,7 +228,9 @@ enum NodeType
     NODE_TYPE_SET_OUTPUT_FILE,
     NODE_TYPE_SET_CPU_TYPE,
     NODE_TYPE_ASSEMBLEALL_ON,
-    NODE_TYPE_ASSEMBLEALL_OFF    
+    NODE_TYPE_ASSEMBLEALL_OFF    ,
+    NODE_TYPE_JRINLOOPS_ON,
+    NODE_TYPE_JRINLOOPS_OFF
 };
 
 #define MAX_AST_NODE_CHILDREN   16
@@ -403,10 +407,11 @@ void revert_to_duplicate_ifdef_expect();
 
 // Compiler
 
-extern int compiler_current_address;
+extern uint16_t compiler_current_address;
 extern char *compiler_output_filename;
 
 extern BOOL assemble_all;
+extern BOOL jr_in_loops;
 
 void init_compiler();
 int compile(struct ASTNode *first_node);

@@ -5,6 +5,7 @@ A high-level assembler for Z80 CPUs.
 ## Introduction
 
 An assembler targeting Z80 CPUs with some high-level syntax that is translated into simple and direct assembly instructions.  
+[Manual for the language](https://github.com/internalregister/z80hla/blob/master/MANUAL.md)  
 
 Example of the syntax:
 ```
@@ -104,7 +105,7 @@ You can execute it from here or copy it to a location where you can use it from 
 
 ## Using it
 
-To use it simply do:
+To use it simply use the command:
 ```
 z80hla file.z80hla
 ```
@@ -119,6 +120,7 @@ Here are some extra options you can use when executing the assembler:
 - `-c`/`--cpu` `CPU` : set a CPU type: `z80` (default), `gb`, `msx` or `r800` (the same as `msx`)
 - `-d`/`--define` `IDENTIFIER` : add a define identifier
 - `-a`/`--assembleall` : Assemble all library symbols and not just the ones referenced
+- `-j`/`--jrloop` : Generate jr instead of jp when possible in loops
 - `-s`/`--symbols` `FILE` : output a JSON file with all the symbols
 - `-l`/`--list` `FILE` : output a file listing instructions and data without high-level constructs
 

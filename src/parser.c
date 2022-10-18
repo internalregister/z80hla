@@ -203,7 +203,9 @@ char *node_type_names[] = {
     "NODE_TYPE_SET_OUTPUT_FILE",
     "NODE_TYPE_SET_CPU_TYPE",
     "NODE_TYPE_ASSEMBLEALL_ON",
-    "NODE_TYPE_ASSEMBLEALL_OFF"
+    "NODE_TYPE_ASSEMBLEALL_OFF",
+    "NODE_TYPE_JRINLOOPS_ON",
+    "NODE_TYPE_JRINLOOPS_OFF"
 };
 
 void fprint_ast(FILE *fp, struct ASTNode *node)
@@ -2666,6 +2668,26 @@ struct ASTNode *parse(struct Lexer *lexer, struct ASTNode *parent_node, struct A
                         }
 
                         struct ASTNode *ast_node = create_node(directiveType == TOKEN_TYPE_ASSEMBLEALL_ON ? NODE_TYPE_ASSEMBLEALL_ON : NODE_TYPE_ASSEMBLEALL_OFF, lexer);
+                        
+                        ast_node_main->children[0] = ast_node;
+                        ast_node_main->children[1] = create_node(NODE_TYPE_MAIN, lexer);
+                        ast_node_main->children_count = 2;
+                        ast_node_main = ast_node_main->children[1];
+
+                        break;
+                    }
+                    case TOKEN_TYPE_JRINLOOPS_ON:
+                    case TOKEN_TYPE_JRINLOOPS_OFF:
+                    {
+                        enum TokenType directiveType = token.type;
+                        if (get_next_token(lexer, &token, FALSE)) { return NULL; }
+                        if (token.type != TOKEN_TYPE_NEWLINE)
+                        {
+                            write_compiler_error(lexer->filename, lexer->current_line, "Expected new line after directive, found \"%.*s\"", token.size, token.value);
+                            return NULL;
+                        }
+
+                        struct ASTNode *ast_node = create_node(directiveType == TOKEN_TYPE_JRINLOOPS_ON ? NODE_TYPE_JRINLOOPS_ON : NODE_TYPE_JRINLOOPS_OFF, lexer);
                         
                         ast_node_main->children[0] = ast_node;
                         ast_node_main->children[1] = create_node(NODE_TYPE_MAIN, lexer);

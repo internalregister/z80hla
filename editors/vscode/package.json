@@ -4,7 +4,7 @@
     "description": "Z80 high-level assembly",
     "repository": "https://github.com/internalregister/z80hla/tree/master/editors/vscode",
     "license": "BSD",
-    "version": "1.0.1",
+    "version": "1.1.0",
     "publisher": "Sérgio Vieira",
     "categories": [],
     "engines": {

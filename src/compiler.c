@@ -560,7 +560,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
 
                 if (has_else)
                 {
-                    if (else_clause_length < 128)
+                    if (jr_in_loops && else_clause_length < 128)
                     {
                         jp2_node = create_jr_node(label2);
                     }
@@ -576,14 +576,14 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 
                 if (check_condition_op(node, node->str_value, node->str_size)) { return 1; }
 
-                if (if_clause_length > 127)
+                if (!jr_in_loops || if_clause_length > 127)
                 {
                     jp_node = create_reverse_jp_cond_node(node->str_value, node->str_size, label1);
                 }
                 else
                 {
                     jp_node = create_reverse_jr_cond_node(node->str_value, node->str_size, label1);
-                }                
+                }
 
                 if (compile_op(jp_node, FALSE, &inner_length)) { return 1; }
                 *length += inner_length;
@@ -596,7 +596,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 
                 current_node->children[0] = jp_node;
 
-                last_cur_node = current_node->children[1] = node->children[0];                
+                last_cur_node = current_node->children[1] = node->children[0];
 
                 while(last_cur_node->children_count != 0)
                 {
@@ -654,7 +654,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 
                 if (check_condition_op(node, node->str_value, node->str_size)) { return 1; }
 
-                if (inner_while_length < 124)
+                if (jr_in_loops && inner_while_length < 124)
                 {
                     jp_node = create_reverse_jr_cond_node(node->str_value, node->str_size, label2);
                 }
@@ -685,7 +685,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 struct ASTNode *label2_node = create_node_str(NODE_TYPE_LABEL, NULL, label2, strlen(label2));
                 struct ASTNode *jp2_node = NULL;
                 
-                if (inner_while_length < 124)
+                if (jr_in_loops && inner_while_length < 124)
                 {
                     jp2_node = create_jr_node(label1);
                 }
@@ -729,7 +729,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 if (check_condition_op(node, node->str_value, node->str_size)) { return 1; }
 
                 struct ASTNode *jp_node = NULL;
-                if (inner_do_length < 127)
+                if (jr_in_loops && inner_do_length < 127)
                 {
                     jp_node = create_jr_cond_node(node->str_value, node->str_size, label1);
                 }
@@ -777,7 +777,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 pop_loop_label();
 
                 struct ASTNode *jp_node = NULL;                
-                if (inner_forever_length < 127)
+                if (jr_in_loops && inner_forever_length < 127)
                 {
                     jp_node = create_jr_node(label1);
                 }
@@ -861,6 +861,16 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
             case NODE_TYPE_ASSEMBLEALL_OFF:
             {
                 assemble_all = FALSE;
+                break;
+            }
+            case NODE_TYPE_JRINLOOPS_ON:
+            {
+                jr_in_loops = TRUE;
+                break;
+            }
+            case NODE_TYPE_JRINLOOPS_OFF:
+            {
+                jr_in_loops = FALSE;
                 break;
             }
             default:
@@ -953,7 +963,7 @@ static int compile_struct_init(struct ASTNode *struct_init, struct StructuredTyp
     return 0;
 }
 
-int compiler_current_address = 0;
+uint16_t compiler_current_address = 0;
 
 static void fprint_start_list(FILE *fp, struct ASTNode *node)
 {
@@ -1190,6 +1200,7 @@ static int second_pass(struct ASTNode *first_node)
     compiler_current_address = 0;
 
     assemble_all = FALSE;
+    jr_in_loops = FALSE;
 
     while (current_node != NULL && current_node->children_count > 0)
     {
@@ -1562,6 +1573,16 @@ static int second_pass(struct ASTNode *first_node)
                 assemble_all = FALSE;
                 break;
             }
+            case NODE_TYPE_JRINLOOPS_ON:
+            {
+                jr_in_loops = TRUE;
+                break;
+            }
+            case NODE_TYPE_JRINLOOPS_OFF:
+            {
+                jr_in_loops = FALSE;
+                break;
+            }
             default:
                 break;
         }
@@ -1575,6 +1596,8 @@ char *compiler_output_filename;
 static FILE *compiler_fp_output = NULL;
 
 BOOL assemble_all = FALSE;
+
+BOOL jr_in_loops = FALSE;
 
 int bytes_saved = 0;
 

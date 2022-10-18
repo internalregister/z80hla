@@ -162,6 +162,46 @@ library Misc
 ; Misc::foo2 and Misc::another_foo_data are ignored
 ```
 
+**#jrinloops_on**  
+**#jrinloops_off**
+
+Enables or disables ifs/elses and loops being generated with `jr` instructions instead of `jp` instructions whenever possible.  
+By default this option is off.
+
+Example:
+```
+dec a
+if (z)
+{
+  ld (hl), 1
+}
+else
+{
+  ld (hl), 0
+}
+```
+Will be generated to:
+```
+  dec a
+  jp nz, label
+  ld (hl), 1
+  jp label2
+label:
+  ld (hl), 0
+label2:
+```
+With `#jrinloop_on` (or the respective program option), will be generated to:
+```
+  dec a
+  jr nz, label
+  ld (hl), 1
+  jr label2
+label:
+  ld (hl), 0
+label2:
+```
+
+
 ## Comments
 
 **;** or **//**
@@ -221,6 +261,17 @@ db 0, 1 ; outputs the bytes 0 and 1
 ```
 
 ## High-level syntax
+
+### Constants
+
+**const name = expr**
+
+Defines a constant value.
+
+Example:
+```
+const stuff = 123
+```
 
 ### Code blocks
 
@@ -307,8 +358,9 @@ main:
 
 **if (*cond*) {...} [else {...}]**  
 
-Branching using conditional `jr` whenever possible and conditional `jp` in the other cases.  
+Branching using conditional.  
 The conditions that can be used are those possible with the Z80 cpu: `z`, `nz`, `c`, `nc`, `p`, `m`, `pe`, `po`.  
+It uses the `jp` instruction, unless `#jrinloops_on` is being used.  
 
 Example:
 
@@ -341,7 +393,8 @@ label2:
 **while (*cond*) {...}**  
 **do {...} while(*cond*)**  
 
-Conditional loop using `jr` when possible and `jp`otherwise.  
+Conditional loop.  
+It uses the `jp` instruction, unless `#jrinloops_on` is being used. 
 
 Example:
 ```
@@ -362,7 +415,8 @@ while (nz)
 
 **forever {...}**
 
-Infinite loop using `jr` when possible and `jp` otherwise.
+Infinite loop.  
+It uses the `jp` instruction, unless `#jrinloops_on` is being used.
 
 Example:
 ```
@@ -375,13 +429,13 @@ is equivalent to
 ```
 loop:
   call do_stuff
-  jr loop
+  jp loop
 ```
 
 ***break***
 
 Jumps out of the current loop.
-It always uses a `jp` to do so (it could be more efficient to use a `jr` in some occasions).
+It always uses a `jp` instruction to do so.
 
 ```
 forever()
@@ -596,7 +650,7 @@ Getting the field relative address of a type
 
 **type.*field*|*field[index]*...**
 
-Example
+Example:
 ```
 ; Using the declaration in the example above
 
@@ -612,9 +666,10 @@ Using `.` and `.|` separators:
 The `.|` is similar to the `.` separator, the difference is that it doesn't add the address to anything before it.  
 The address of `a.b.c` is the address of `a` added to the relative address of `b` inside `a` added to the relative address of `c` inside `b`.  
 The address of `a.b.|c` is simply the relative address of `c` inside `b`.
-This is useful when in the code we're navigating inside the structure elements in structures inside of other structures.
+This is useful when in the code we're navigating inside the structure elements in structures inside of other structures.  
+`a.b.|c` is the same as `a.b.c - a.b`.
 
-Example
+Example:
 ```
 ld bc, 0x1000
 ld ix, more_vehicles
