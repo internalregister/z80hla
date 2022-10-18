@@ -112,6 +112,96 @@ forever
 data byte flag[1]
 ```
 
+**#assembleall_on**  
+**#assembleall_off**
+
+Enables or disables assembling functions and data in libraries not being referenced.
+By default, it is off.
+
+Example:
+```
+; by default #assembleall_off
+
+library Misc
+{
+  function foo()
+  {
+    ld a, foo_data
+  }
+
+  function foo2()
+  {
+    ld a, (another_foo_data)
+  }
+
+  data byte foo_data
+  data byte another_foo_data = 1, 2, 3, 4, 5
+}
+
+foo()
+foo3()
+
+#assembleall_on
+
+library Misc
+{
+  function foo3()
+  {
+    nop
+  }
+
+  function foo4()
+  {
+    ld hl, foo_data2
+  }
+
+  data word foo_data2[10]
+}
+
+; Misc::foo, Misc::foo2, Misc:foo3, Misc:foo4 and Misc::foo_data2 is assembled
+; Misc::foo2 and Misc::another_foo_data are ignored
+```
+
+**#jrinloops_on**  
+**#jrinloops_off**
+
+Enables or disables ifs/elses and loops being generated with `jr` instructions instead of `jp` instructions whenever possible.  
+By default this option is off.
+
+Example:
+```
+dec a
+if (z)
+{
+  ld (hl), 1
+}
+else
+{
+  ld (hl), 0
+}
+```
+Will be generated to:
+```
+  dec a
+  jp nz, label
+  ld (hl), 1
+  jp label2
+label:
+  ld (hl), 0
+label2:
+```
+With `#jrinloop_on` (or the respective program option), will be generated to:
+```
+  dec a
+  jr nz, label
+  ld (hl), 1
+  jr label2
+label:
+  ld (hl), 0
+label2:
+```
+
+
 ## Comments
 
 **;** or **//**
@@ -171,6 +261,17 @@ db 0, 1 ; outputs the bytes 0 and 1
 ```
 
 ## High-level syntax
+
+### Constants
+
+**const name = expr**
+
+Defines a constant value.
+
+Example:
+```
+const stuff = 123
+```
 
 ### Code blocks
 
@@ -257,8 +358,9 @@ main:
 
 **if (*cond*) {...} [else {...}]**  
 
-Branching using conditional `jr` whenever possible and conditional `jp` in the other cases.  
+Branching using conditional.  
 The conditions that can be used are those possible with the Z80 cpu: `z`, `nz`, `c`, `nc`, `p`, `m`, `pe`, `po`.  
+It uses the `jp` instruction, unless `#jrinloops_on` is being used.  
 
 Example:
 
@@ -291,7 +393,8 @@ label2:
 **while (*cond*) {...}**  
 **do {...} while(*cond*)**  
 
-Conditional loop using `jr` when possible and `jp`otherwise.  
+Conditional loop.  
+It uses the `jp` instruction, unless `#jrinloops_on` is being used. 
 
 Example:
 ```
@@ -312,7 +415,8 @@ while (nz)
 
 **forever {...}**
 
-Infinite loop using `jr` when possible and `jp` otherwise.
+Infinite loop.  
+It uses the `jp` instruction, unless `#jrinloops_on` is being used.
 
 Example:
 ```
@@ -325,13 +429,13 @@ is equivalent to
 ```
 loop:
   call do_stuff
-  jr loop
+  jp loop
 ```
 
 ***break***
 
 Jumps out of the current loop.
-It always uses a `jp` to do so (it could be more efficient to use a `jr` in some occasions).
+It always uses a `jp` instruction to do so.
 
 ```
 forever()
@@ -344,6 +448,18 @@ forever()
 }
 ```
 
+***breakif(cond)***
+
+Jumps out of the current loop under a condition.
+It always uses a `jp` to do so.
+
+```
+forever()
+{
+  ld a, (value)
+  breakif(z)
+}
+```
 
 ### Data declaration
 
@@ -402,6 +518,20 @@ data word score       ; 2 bytes named "score"
 data byte table[100]  ; 100 bytes name "table"
 ```
 
+**data *type* *[name]* [*expression*] of *expression***  
+
+Declare array of data.
+
+Example:
+```
+data byte [20] of 0xFF                  ; 20 bytes of 0xFF
+data CustomStructType table[100] of {
+  value = 100
+  innerStruct = {
+    velocity = 10
+  }
+}                                       ; 100 instances of CustomStructType with custom initialization
+```
 
 **data *type* *[name]* from *string***
 
@@ -514,13 +644,13 @@ data Vehicle more_vehicles[10]
 
 Getting the field address of data.
 
-**data.*field*|*field[index]*...**
+**data.*field*|*field[index]*...**  
 
 Getting the field relative address of a type
 
 **type.*field*|*field[index]*...**
 
-Example
+Example:
 ```
 ; Using the declaration in the example above
 
@@ -532,13 +662,42 @@ ld (more_vehicles[5].attributes.max_cargo), hl
 #print Vehicle.type   ; 0
 ```
 
+Using `.` and `.|` separators:  
+The `.|` is similar to the `.` separator, the difference is that it doesn't add the address to anything before it.  
+The address of `a.b.c` is the address of `a` added to the relative address of `b` inside `a` added to the relative address of `c` inside `b`.  
+The address of `a.b.|c` is simply the relative address of `c` inside `b`.
+This is useful when in the code we're navigating inside the structure elements in structures inside of other structures.  
+`a.b.|c` is the same as `a.b.c - a.b`.
+
+Example:
+```
+ld bc, 0x1000
+ld ix, more_vehicles
+ld de, sizeof(Vehicle)
+ld h, length(more_vehicles)
+do
+{
+  ; get the value of airplane.wing_span inside each more_vehicles
+  ld a, (ix + more_vehicles.|airplane.wing_span)
+  out (c), a
+  add ix, de
+  dec h
+} while(nz)
+```
+
 
 
 ### Libraries
 
 Libraries contain functions, inlines, data declaration and struct types.
-Their full names are *library name*::*name*. Inside the library where they're declared they can be referenced by their short or full name. Outside the library the full name needs to be used.
+Their full names are *library name*::*name*.  
+Inside the library where they're declared they can be referenced by their short or full name. Outside the library the full name needs to be used.
 
+**library *name* {**  
+***...function|data|const...***  
+**}**
+
+Example:
 ```
 library MyLibrary
 {
@@ -576,7 +735,8 @@ library MyLibrary
 }
 ```
 
-One of the main features of libraries are that functions and data not used are not assembled. Only those used directly or indrectly are assembled, the rest are ignored.
+One of the main features of libraries are that functions and data not used are not assembled unless the directive `#assembleall_on` is used or the corresponding option is used.  
+Only those used directly or indrectly are assembled, the rest are ignored.
 
 ```
 data byte value
@@ -607,6 +767,7 @@ library Misc
 Misc::func1()
 
 ; Misc::func1, Misc::func3 and Misc::value2 will be assembled
+; Misc::value1 and Misc::func2 will be ignored
 ```
 
 

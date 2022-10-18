@@ -1,3 +1,5 @@
+#assembleall_off
+
 jp loop
 
 library Console
@@ -49,4 +51,29 @@ library Console2
 library Console
 {
     data byte array[10]
+}
+
+#assembleall_on
+
+library Console
+{
+    function notused()
+    {
+        ld a, 55
+        ld a, notused_data
+    }
+
+    data byte notused_data = 10, 100
+}
+
+#assembleall_off
+
+library Console
+{
+    function notused2()
+    {
+        nop
+    }
+
+    data word notused_data2 = 1000
 }

@@ -39,7 +39,7 @@
 // #define DEBUG 1
 
 #define Z80HLA_VERSION_HI   "1"
-#define Z80HLA_VERSION_LO   "0"
+#define Z80HLA_VERSION_LO   "1"
 
 #define INCLUDE_STACK_MAX   10
 
@@ -144,6 +144,7 @@ enum TokenType
     TOKEN_TYPE_DO,
     TOKEN_TYPE_FOREVER,
     TOKEN_TYPE_BREAK,
+    TOKEN_TYPE_BREAKIF,
     TOKEN_TYPE_SIZEOF,
     TOKEN_TYPE_LENGTH,
     TOKEN_TYPE_OUTPUT_ON,
@@ -156,7 +157,13 @@ enum TokenType
     TOKEN_TYPE_IFNDEF,
     TOKEN_TYPE_IFDEF_ELSE,
     TOKEN_TYPE_IFDEF_ENDIF,
-    TOKEN_TYPE_DEFINE
+    TOKEN_TYPE_DEFINE,
+    TOKEN_TYPE_ASSEMBLEALL_ON,
+    TOKEN_TYPE_ASSEMBLEALL_OFF,
+    TOKEN_TYPE_OF,
+    TOKEN_TYPE_DOT_PIPE,
+    TOKEN_TYPE_JRINLOOPS_ON,
+    TOKEN_TYPE_JRINLOOPS_OFF,
 };
 
 struct Token
@@ -213,12 +220,17 @@ enum NodeType
     NODE_TYPE_DO,
     NODE_TYPE_FOREVER,
     NODE_TYPE_BREAK,
+    NODE_TYPE_BREAKIF,
     NODE_TYPE_STRING,
     NODE_TYPE_OUTPUT_ON,
     NODE_TYPE_OUTPUT_OFF,
     NODE_TYPE_INCLUDE_BINARY,
     NODE_TYPE_SET_OUTPUT_FILE,
-    NODE_TYPE_SET_CPU_TYPE
+    NODE_TYPE_SET_CPU_TYPE,
+    NODE_TYPE_ASSEMBLEALL_ON,
+    NODE_TYPE_ASSEMBLEALL_OFF    ,
+    NODE_TYPE_JRINLOOPS_ON,
+    NODE_TYPE_JRINLOOPS_OFF
 };
 
 #define MAX_AST_NODE_CHILDREN   16
@@ -238,6 +250,8 @@ struct ASTNode
     char *filename;
     int file_line;
 };
+
+BOOL is_node_expression_type(enum NodeType node_type);
 
 // Lexer
 
@@ -393,8 +407,11 @@ void revert_to_duplicate_ifdef_expect();
 
 // Compiler
 
-extern int compiler_current_address;
+extern uint16_t compiler_current_address;
 extern char *compiler_output_filename;
+
+extern BOOL assemble_all;
+extern BOOL jr_in_loops;
 
 void init_compiler();
 int compile(struct ASTNode *first_node);

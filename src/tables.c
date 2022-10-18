@@ -535,6 +535,11 @@ BOOL is_library_symbol_needed(char *library_name, int library_size, char *symbol
 {
 	struct SymbolList *current_symbol = library_symbols_used;
 
+	if (assemble_all)
+	{
+		return TRUE;
+	}
+
 	while(current_symbol != NULL)
 	{
 		if (is_str_equal2(library_name, library_size, current_symbol->library_name, current_symbol->library_size) && 

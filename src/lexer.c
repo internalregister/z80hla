@@ -420,7 +420,20 @@ static int get_token(struct Lexer *lexer, struct Token *token, BOOL skip_newline
         case ':': token->type = TOKEN_TYPE_COLON; break;
         case '=': token->type = TOKEN_TYPE_EQUALS; break;
         case '$': token->type = TOKEN_TYPE_DOLLAR; break;
-        case '.': token->type = TOKEN_TYPE_DOT; break;
+        case '.':
+        {
+            if (lexer->buffer_at[1] == '|')
+            {
+                token->size++;
+                lexer->buffer_at++;
+                token->type = TOKEN_TYPE_DOT_PIPE;
+            }
+            else
+            {
+                token->type = TOKEN_TYPE_DOT;
+            }
+            break;
+        }
         case '\n': token->type = TOKEN_TYPE_NEWLINE; lexer->current_line++; break;
         case '<':
         {
@@ -598,6 +611,22 @@ static int get_token(struct Lexer *lexer, struct Token *token, BOOL skip_newline
             {
                 token->type = TOKEN_TYPE_DEFINE;
             }
+            else if (is_str_equal_token_value(token, "#assembleall_on"))
+            {
+                token->type = TOKEN_TYPE_ASSEMBLEALL_ON;
+            }
+            else if (is_str_equal_token_value(token, "#assembleall_off"))
+            {
+                token->type = TOKEN_TYPE_ASSEMBLEALL_OFF;
+            }
+            else if (is_str_equal_token_value(token, "#jrinloops_on"))
+            {
+                token->type = TOKEN_TYPE_JRINLOOPS_ON;
+            }
+            else if (is_str_equal_token_value(token, "#jrinloops_off"))
+            {
+                token->type = TOKEN_TYPE_JRINLOOPS_OFF;
+            }
             else
             {
                 write_compiler_error(lexer->filename, lexer->current_line, "Unexpected token \"%.*s\"", token->size, token->value);
@@ -725,6 +754,10 @@ static int get_token(struct Lexer *lexer, struct Token *token, BOOL skip_newline
                     {
                         token->type = TOKEN_TYPE_BREAK;
                     }
+                    else if (is_str_equal_token_value(token, "breakif"))
+                    {
+                        token->type = TOKEN_TYPE_BREAKIF;
+                    }
                     else if (is_str_equal_token_value(token, "sizeof"))
                     {
                         token->type = TOKEN_TYPE_SIZEOF;
@@ -736,6 +769,10 @@ static int get_token(struct Lexer *lexer, struct Token *token, BOOL skip_newline
                     else if (is_str_equal_token_value(token, "from"))
                     {
                         token->type = TOKEN_TYPE_FROM;
+                    }
+                    else if (is_str_equal_token_value(token, "of"))
+                    {
+                        token->type = TOKEN_TYPE_OF;
                     }
                     else if (is_str_equal_token_value(token, "byte") || is_str_equal_token_value(token, "word") || is_str_equal_token_value(token, "dword"))
                     {

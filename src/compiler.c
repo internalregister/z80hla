@@ -359,6 +359,23 @@ static struct ASTNode *add_main_node_to_end(struct ASTNode *child_node, struct A
     return new_node;
 }
 
+static int check_condition_op(struct ASTNode *node, char *cond, int cond_size)
+{
+    if (cpu_type == CPU_TYPE_GB)
+    {
+        if (is_str_equal(cond, cond_size, "p") ||
+            is_str_equal(cond, cond_size, "m") ||
+            is_str_equal(cond, cond_size, "pe") ||
+            is_str_equal(cond, cond_size, "po"))
+        {
+            write_compiler_error(node->filename, node->file_line, "Condition \"%.*s\" in do is invalid for this cpu type", cond, cond_size);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 static int recursive_first_pass(struct ASTNode *first_node, int *length)
 {
     struct ASTNode *current_node = first_node, *node;    
@@ -543,7 +560,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
 
                 if (has_else)
                 {
-                    if (else_clause_length < 128)
+                    if (jr_in_loops && else_clause_length < 128)
                     {
                         jp2_node = create_jr_node(label2);
                     }
@@ -556,27 +573,17 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                     *length += inner_length;
                     if_clause_length += inner_length;
                 }
+                
+                if (check_condition_op(node, node->str_value, node->str_size)) { return 1; }
 
-                if (cpu_type == CPU_TYPE_GB)
-                {
-                    if (is_str_equal(node->str_value, node->str_size, "p") ||
-                        is_str_equal(node->str_value, node->str_size, "m") ||
-                        is_str_equal(node->str_value, node->str_size, "pe") ||
-                        is_str_equal(node->str_value, node->str_size, "po"))
-                    {
-                        write_compiler_error(node->filename, node->file_line, "Condition \"%.*s\" in if is invalid for this cpu type", node->str_size, node->str_value);
-                        return 1;
-                    }
-                }
-
-                if (if_clause_length > 127)
+                if (!jr_in_loops || if_clause_length > 127)
                 {
                     jp_node = create_reverse_jp_cond_node(node->str_value, node->str_size, label1);
                 }
                 else
                 {
                     jp_node = create_reverse_jr_cond_node(node->str_value, node->str_size, label1);
-                }                
+                }
 
                 if (compile_op(jp_node, FALSE, &inner_length)) { return 1; }
                 *length += inner_length;
@@ -589,7 +596,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 
                 current_node->children[0] = jp_node;
 
-                last_cur_node = current_node->children[1] = node->children[0];                
+                last_cur_node = current_node->children[1] = node->children[0];
 
                 while(last_cur_node->children_count != 0)
                 {
@@ -645,19 +652,9 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
 
                 struct ASTNode *jp_node = NULL;
                 
-                if (cpu_type == CPU_TYPE_GB)
-                {
-                    if (is_str_equal(node->str_value, node->str_size, "p") ||
-                        is_str_equal(node->str_value, node->str_size, "m") ||
-                        is_str_equal(node->str_value, node->str_size, "pe") ||
-                        is_str_equal(node->str_value, node->str_size, "po"))
-                    {
-                        write_compiler_error(node->filename, node->file_line, "Condition \"%.*s\" in while is invalid for this cpu type", node->str_size, node->str_value);
-                        return 1;
-                    }
-                }
+                if (check_condition_op(node, node->str_value, node->str_size)) { return 1; }
 
-                if (inner_while_length < 124)
+                if (jr_in_loops && inner_while_length < 124)
                 {
                     jp_node = create_reverse_jr_cond_node(node->str_value, node->str_size, label2);
                 }
@@ -688,7 +685,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 struct ASTNode *label2_node = create_node_str(NODE_TYPE_LABEL, NULL, label2, strlen(label2));
                 struct ASTNode *jp2_node = NULL;
                 
-                if (inner_while_length < 124)
+                if (jr_in_loops && inner_while_length < 124)
                 {
                     jp2_node = create_jr_node(label1);
                 }
@@ -729,20 +726,10 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
 
                 pop_loop_label();
 
-                if (cpu_type == CPU_TYPE_GB)
-                {
-                    if (is_str_equal(node->str_value, node->str_size, "p") ||
-                        is_str_equal(node->str_value, node->str_size, "m") ||
-                        is_str_equal(node->str_value, node->str_size, "pe") ||
-                        is_str_equal(node->str_value, node->str_size, "po"))
-                    {
-                        write_compiler_error(node->filename, node->file_line, "Condition \"%.*s\" in do is invalid for this cpu type", node->str_size, node->str_value);
-                        return 1;
-                    }
-                }
+                if (check_condition_op(node, node->str_value, node->str_size)) { return 1; }
 
                 struct ASTNode *jp_node = NULL;
-                if (inner_do_length < 127)
+                if (jr_in_loops && inner_do_length < 127)
                 {
                     jp_node = create_jr_cond_node(node->str_value, node->str_size, label1);
                 }
@@ -790,7 +777,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 pop_loop_label();
 
                 struct ASTNode *jp_node = NULL;                
-                if (inner_forever_length < 127)
+                if (jr_in_loops && inner_forever_length < 127)
                 {
                     jp_node = create_jr_node(label1);
                 }
@@ -841,9 +828,49 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
 
                 break;
             }
+            case NODE_TYPE_BREAKIF:
+            {
+                char *label = peek_loop_label();
+                if (label == NULL)
+                {
+                    write_compiler_error(node->filename, node->file_line, "breakif not inside of loop", 0);
+                    return 1;
+                }
+
+                if (check_condition_op(node, node->str_value, node->str_size)) { return 1; }
+
+                struct ASTNode *last_node = current_node->children[1];
+
+                struct ASTNode *jp_node = create_jp_cond_node(node->str_value, node->str_size, label);
+                struct ASTNode *new_node = add_main_node_to_end(jp_node, current_node);
+                new_node->children_count = 2;
+                new_node->children[1] = last_node;
+
+                break;
+            }
             case NODE_TYPE_SET_CPU_TYPE:
             {
                 cpu_type = (enum CPUType)node->num_value;
+                break;
+            }
+            case NODE_TYPE_ASSEMBLEALL_ON:
+            {
+                assemble_all = TRUE;
+                break;
+            }
+            case NODE_TYPE_ASSEMBLEALL_OFF:
+            {
+                assemble_all = FALSE;
+                break;
+            }
+            case NODE_TYPE_JRINLOOPS_ON:
+            {
+                jr_in_loops = TRUE;
+                break;
+            }
+            case NODE_TYPE_JRINLOOPS_OFF:
+            {
+                jr_in_loops = FALSE;
                 break;
             }
             default:
@@ -908,7 +935,7 @@ static int compile_struct_init(struct ASTNode *struct_init, struct StructuredTyp
 
             if (is_struct_element_native)
             {
-                if (struct_init_element_value->children[0]->type != NODE_TYPE_EXPRESSION)
+                if (!is_node_expression(struct_init_element_value->children[0]))
                 {
                     write_compiler_error(struct_init_element->filename, struct_init_element->file_line, "Expected expression for element \"%.*s\"", struct_element->name_size, struct_element->name);
                     return 1;
@@ -936,7 +963,7 @@ static int compile_struct_init(struct ASTNode *struct_init, struct StructuredTyp
     return 0;
 }
 
-int compiler_current_address = 0;
+uint16_t compiler_current_address = 0;
 
 static void fprint_start_list(FILE *fp, struct ASTNode *node)
 {
@@ -1028,6 +1055,142 @@ static void fprint_data_list(FILE *fp, struct ASTNode *node, int size, int lengt
     fprintf(fp, ") = %d\n", length);
 }
 
+static int compile_data_init(char *type_name, int type_name_size, struct StructuredType *structured_type, struct ASTNode *node, struct ASTNode *node_expression, int *data_length, BOOL allow_string)
+{
+    if (is_str_equal(type_name, type_name_size, "byte"))
+    {
+        if (is_node_expression_type(node_expression->type))
+        {
+           node_expression->type = NODE_TYPE_EXPRESSION_8;
+            add_output_element_set_address(0, node_expression);
+
+            if (fp_list != NULL) fprint_db_list(fp_list, node, 0, node_expression, FPRINT_DB_TYPE_BYTE);
+
+            compiler_current_address++;
+        }
+        else if (node_expression->type == NODE_TYPE_STRING)
+        {
+            if (!allow_string)
+            {
+                write_compiler_error(node->filename, node->file_line, "Expression expected in data initializer", 0);
+                return 1;
+            }
+
+            for(int i = 0; i < node_expression->str_size; i++)
+            {
+                add_output_element_set_address(node_expression->str_value[i], NULL);
+
+                if (fp_list != NULL) fprint_db_list(fp_list, node, node_expression->str_value[i], NULL, FPRINT_DB_TYPE_BYTE);
+            }
+            compiler_current_address += node_expression->str_size;
+            if (data_length != NULL) { *data_length += node_expression->str_size - 1; }
+        }
+        else
+        {
+            write_compiler_error(node->filename, node->file_line, "Expression or string literal expected in data initializer", 0);
+            return 1;
+        }
+    }
+    else if (is_str_equal(type_name, type_name_size, "word"))
+    {
+        if (!is_node_expression_type(node_expression->type))
+        {
+            write_compiler_error(node->filename, node->file_line, "Expression expected in data initializer", 0);
+            return 1;
+        }
+
+        node_expression->type = NODE_TYPE_EXPRESSION_16;
+        add_output_element(0, node_expression);
+        add_output_element_set_address(0, NULL);
+
+        if (fp_list != NULL) fprint_db_list(fp_list, node, 0, node_expression, FPRINT_DB_TYPE_WORD);
+
+        compiler_current_address += 2;                            
+    }
+    else if (is_str_equal(type_name, type_name_size, "dword"))
+    {
+        if (!is_node_expression_type(node_expression->type))
+        {
+            write_compiler_error(node->filename, node->file_line, "Expression expected in data initializer", 0);
+            return 1;
+        }
+
+        node_expression->type = NODE_TYPE_EXPRESSION_32;
+        add_output_element(0, node_expression);
+        add_output_element(0, NULL);
+        add_output_element(0, NULL);
+        add_output_element_set_address(0, NULL);
+
+        if (fp_list != NULL) fprint_db_list(fp_list, node, 0, node_expression, FPRINT_DB_TYPE_DWORD);
+
+        compiler_current_address += 4;                            
+    }
+    else
+    {
+        if (node_expression->type != NODE_TYPE_STRUCT_INIT)
+        {
+            write_compiler_error(node->filename, node->file_line, "Structure initialization expected", 0);
+            return 1;
+        }
+
+        struct ASTNode *struct_init = node_expression;
+
+        clear_struct_bytes(structured_type->struct_size);
+        if (compile_struct_init(struct_init, structured_type, 0)) { return 1; }
+        int list_skip_bytes = 0;
+        for(int i = 0; i < structured_type->struct_size; i++)
+        {
+            add_output_element_set_address(0, struct_bytes[i]);                                
+
+            if (struct_bytes[i] != NULL)
+            {
+                if (i > 0)
+                {
+                    if (fp_list != NULL) fprint_db_list_end(fp_list);
+                }
+                switch(struct_bytes[i]->type)
+                {                    
+                    case NODE_TYPE_EXPRESSION_16:
+                    {                        
+                        if (fp_list != NULL) fprint_db_list(fp_list, node, 0, struct_bytes[i], FPRINT_DB_TYPE_WORD);
+                        list_skip_bytes = 2;
+                        break;
+                    }
+                    case NODE_TYPE_EXPRESSION_32:
+                    {
+                        if (fp_list != NULL) fprint_db_list(fp_list, node, 0, struct_bytes[i], FPRINT_DB_TYPE_DWORD);
+                        list_skip_bytes = 4;
+                        break;
+                    }
+                    default:
+                    {
+                        if (fp_list != NULL) fprint_db_list(fp_list, node, 0, struct_bytes[i], FPRINT_DB_TYPE_BYTE);
+                        list_skip_bytes = 1;
+                    }
+                }
+            }
+            else if (list_skip_bytes == 0)
+            {
+                if (i > 0)
+                {
+                    if (fp_list != NULL) fprint_db_list_end(fp_list);
+                }
+                if (fp_list != NULL) fprint_db_list(fp_list, node, 0, struct_bytes[i], FPRINT_DB_TYPE_BYTE);
+            }
+
+            if (list_skip_bytes > 0)
+            {
+                list_skip_bytes--;
+            }
+            
+            compiler_current_address++;
+        }
+    }
+    if (data_length != NULL) {(*data_length)++;}
+
+    return 0;
+}
+
 static int second_pass(struct ASTNode *first_node)
 {
     struct ASTNode *current_node = first_node, *node;
@@ -1035,6 +1198,9 @@ static int second_pass(struct ASTNode *first_node)
     write_debug("Compiler second pass...", 0);
 
     compiler_current_address = 0;
+
+    assemble_all = FALSE;
+    jr_in_loops = FALSE;
 
     while (current_node != NULL && current_node->children_count > 0)
     {
@@ -1134,129 +1300,8 @@ static int second_pass(struct ASTNode *first_node)
                     int data_length = 0;
                     struct ASTNode *node_value = node->children[1];
                     while (node_value != NULL)
-                    {                    
-                        if (is_str_equal(node->children[0]->str_value, node->children[0]->str_size, "byte"))
-                        {
-                            if (node_value->children[0]->type == NODE_TYPE_EXPRESSION)
-                            {
-                                node_value->children[0]->type = NODE_TYPE_EXPRESSION_8;
-                                add_output_element_set_address(0, node_value->children[0]);
-
-                                if (fp_list != NULL) fprint_db_list(fp_list, node, 0, node_value->children[0], FPRINT_DB_TYPE_BYTE);
-
-                                compiler_current_address++;                                
-                            }
-                            else if (node_value->children[0]->type == NODE_TYPE_STRING)
-                            {
-                                for(int i = 0; i < node_value->children[0]->str_size; i++)
-                                {
-                                    add_output_element_set_address(node_value->children[0]->str_value[i], NULL);
-
-                                    if (fp_list != NULL) fprint_db_list(fp_list, node, node_value->children[0]->str_value[i], NULL, FPRINT_DB_TYPE_BYTE);
-                                }
-                                compiler_current_address += node_value->children[0]->str_size;
-                                data_length += node_value->children[0]->str_size - 1;
-                            }
-                            else
-                            {
-                                write_compiler_error(node->filename, node->file_line, "Expression or string literal expected in data initializer", 0);
-                                return 1;
-                            }
-                        }
-                        else if (is_str_equal(node->children[0]->str_value, node->children[0]->str_size, "word"))
-                        {
-                            if (node_value->children[0]->type != NODE_TYPE_EXPRESSION)
-                            {
-                                write_compiler_error(node->filename, node->file_line, "Expression expected in data initializer", 0);
-                                return 1;
-                            }
-
-                            node_value->children[0]->type = NODE_TYPE_EXPRESSION_16;
-                            add_output_element(0, node_value->children[0]);
-                            add_output_element_set_address(0, NULL);
-
-                            if (fp_list != NULL) fprint_db_list(fp_list, node, 0, node_value->children[0], FPRINT_DB_TYPE_WORD);
-
-                            compiler_current_address += 2;                            
-                        }
-                        else if (is_str_equal(node->children[0]->str_value, node->children[0]->str_size, "dword"))
-                        {
-                            if (node_value->children[0]->type != NODE_TYPE_EXPRESSION)
-                            {
-                                write_compiler_error(node->filename, node->file_line, "Expression expected in data initializer", 0);
-                                return 1;
-                            }
-
-                            node_value->children[0]->type = NODE_TYPE_EXPRESSION_32;
-                            add_output_element(0, node_value->children[0]);
-                            add_output_element(0, NULL);
-                            add_output_element(0, NULL);
-                            add_output_element_set_address(0, NULL);
-
-                            if (fp_list != NULL) fprint_db_list(fp_list, node, 0, node_value->children[0], FPRINT_DB_TYPE_DWORD);
-
-                            compiler_current_address += 4;                            
-                        }
-                        else
-                        {
-                            if (node_value->children[0]->type != NODE_TYPE_STRUCT_INIT)
-                            {
-                                write_compiler_error(node->filename, node->file_line, "Structure initialization expected", 0);
-                                return 1;
-                            }
-
-                            struct ASTNode *struct_init = node_value->children[0];
-
-                            clear_struct_bytes(structured_type->struct_size);
-                            if (compile_struct_init(struct_init, structured_type, 0)) { return 1; }
-                            int list_skip_bytes = 0;
-                            for(int i = 0; i < structured_type->struct_size; i++)
-                            {
-                                add_output_element_set_address(0, struct_bytes[i]);                    
-
-                                if (i > 0)
-                                {
-                                    if (fp_list != NULL) fprint_db_list_end(fp_list);
-                                }
-
-                                if (struct_bytes[i] != NULL)
-                                {
-                                    switch(struct_bytes[i]->type)
-                                    {
-                                        case NODE_TYPE_EXPRESSION_16:
-                                        {
-                                            if (fp_list != NULL) fprint_db_list(fp_list, node, 0, struct_bytes[i], FPRINT_DB_TYPE_WORD);
-                                            list_skip_bytes = 2;
-                                            break;
-                                        }
-                                        case NODE_TYPE_EXPRESSION_32:
-                                        {
-                                            if (fp_list != NULL) fprint_db_list(fp_list, node, 0, struct_bytes[i], FPRINT_DB_TYPE_DWORD);
-                                            list_skip_bytes = 4;
-                                            break;
-                                        }
-                                        default:
-                                        {
-                                            if (fp_list != NULL) fprint_db_list(fp_list, node, 0, struct_bytes[i], FPRINT_DB_TYPE_BYTE);
-                                            list_skip_bytes = 1;
-                                        }
-                                    }
-                                }
-                                else if (list_skip_bytes == 0)
-                                {
-                                    if (fp_list != NULL) fprint_db_list(fp_list, node, 0, struct_bytes[i], FPRINT_DB_TYPE_BYTE);
-                                }
-
-                                if (list_skip_bytes > 0)
-                                {
-                                    list_skip_bytes--;
-                                }
-                                
-                                compiler_current_address++;
-                            }
-                        }
-
-                        data_length++;
+                    {                  
+                        if (compile_data_init(node->children[0]->str_value, node->children[0]->str_size, structured_type, node, node_value->children[0], &data_length, TRUE)) { return 1; }
                         node_value = node_value->children[1];
                     }
 
@@ -1308,43 +1353,51 @@ static int second_pass(struct ASTNode *first_node)
 
                     for(int i = 0; i < value; i++)
                     {
-                        if (is_str_equal(node->children[0]->str_value, node->children[0]->str_size, "byte"))
-                        {                            
-                            add_output_element_set_address(0, NULL);
-
-                            if (fp_list != NULL) fprint_db_list(fp_list, node, 0, NULL, FPRINT_DB_TYPE_BYTE);
-
-                            compiler_current_address++;                            
-                        }
-                        else if (is_str_equal(node->children[0]->str_value, node->children[0]->str_size, "word"))
+                        if (node->children[1]->children_count == 2)
                         {
-                            add_output_element(0, NULL);
-                            add_output_element_set_address(0, NULL);
-
-                            if (fp_list != NULL) fprint_db_list(fp_list, node, 0, NULL, FPRINT_DB_TYPE_WORD);
-
-                            compiler_current_address += 2;                            
-                        }
-                        else if (is_str_equal(node->children[0]->str_value, node->children[0]->str_size, "dword"))
-                        {
-                            add_output_element(0, NULL);
-                            add_output_element(0, NULL);
-                            add_output_element(0, NULL);
-                            add_output_element_set_address(0, NULL);
-
-                            if (fp_list != NULL) fprint_db_list(fp_list, node, 0, NULL, FPRINT_DB_TYPE_DWORD);
-
-                            compiler_current_address += 4;                            
+                            // of
+                            if (compile_data_init(node->children[0]->str_value, node->children[0]->str_size, structured_type, node, node->children[1]->children[1], NULL, FALSE)) { return 1; }
                         }
                         else
                         {
-                            for(int j = 0; j < structured_type->struct_size; j++)
-                            {
+                            if (is_str_equal(node->children[0]->str_value, node->children[0]->str_size, "byte"))
+                            {                            
                                 add_output_element_set_address(0, NULL);
+
                                 if (fp_list != NULL) fprint_db_list(fp_list, node, 0, NULL, FPRINT_DB_TYPE_BYTE);
+
+                                compiler_current_address++;                            
                             }
-                            compiler_current_address += structured_type->struct_size;
-                        }                        
+                            else if (is_str_equal(node->children[0]->str_value, node->children[0]->str_size, "word"))
+                            {
+                                add_output_element(0, NULL);
+                                add_output_element_set_address(0, NULL);
+
+                                if (fp_list != NULL) fprint_db_list(fp_list, node, 0, NULL, FPRINT_DB_TYPE_WORD);
+
+                                compiler_current_address += 2;                            
+                            }
+                            else if (is_str_equal(node->children[0]->str_value, node->children[0]->str_size, "dword"))
+                            {
+                                add_output_element(0, NULL);
+                                add_output_element(0, NULL);
+                                add_output_element(0, NULL);
+                                add_output_element_set_address(0, NULL);
+
+                                if (fp_list != NULL) fprint_db_list(fp_list, node, 0, NULL, FPRINT_DB_TYPE_DWORD);
+
+                                compiler_current_address += 4;                            
+                            }
+                            else
+                            {
+                                for(int j = 0; j < structured_type->struct_size; j++)
+                                {
+                                    add_output_element_set_address(0, NULL);
+                                    if (fp_list != NULL) fprint_db_list(fp_list, node, 0, NULL, FPRINT_DB_TYPE_BYTE);
+                                }
+                                compiler_current_address += structured_type->struct_size;
+                            }    
+                        }                    
                     }
 
                     if (fp_list != NULL) fprint_db_list_end(fp_list);
@@ -1510,6 +1563,26 @@ static int second_pass(struct ASTNode *first_node)
                 cpu_type = (enum CPUType)node->num_value;
                 break;
             }
+            case NODE_TYPE_ASSEMBLEALL_ON:
+            {
+                assemble_all = TRUE;
+                break;
+            }
+            case NODE_TYPE_ASSEMBLEALL_OFF:
+            {
+                assemble_all = FALSE;
+                break;
+            }
+            case NODE_TYPE_JRINLOOPS_ON:
+            {
+                jr_in_loops = TRUE;
+                break;
+            }
+            case NODE_TYPE_JRINLOOPS_OFF:
+            {
+                jr_in_loops = FALSE;
+                break;
+            }
             default:
                 break;
         }
@@ -1521,6 +1594,10 @@ static int second_pass(struct ASTNode *first_node)
 
 char *compiler_output_filename;
 static FILE *compiler_fp_output = NULL;
+
+BOOL assemble_all = FALSE;
+
+BOOL jr_in_loops = FALSE;
 
 int bytes_saved = 0;
 
@@ -1593,11 +1670,11 @@ static int third_pass(struct ASTNode *node)
                     current_output_elem->node = NULL;
                     if (write_output_content) write_output_byte(current_output_elem->value);
                     current_output_elem = current_output_elem->next;
-                    current_output_elem->value = (value >> 8) & 0xFF;
+                    current_output_elem->value = (value >> 16) & 0xFF;
                     current_output_elem->node = NULL;
                     if (write_output_content) write_output_byte(current_output_elem->value);
                     current_output_elem = current_output_elem->next;
-                    current_output_elem->value = (value >> 8) & 0xFF;
+                    current_output_elem->value = (value >> 24) & 0xFF;
                     current_output_elem->node = NULL;
                     if (write_output_content) write_output_byte(current_output_elem->value);
                     current_address+=3;
@@ -1739,7 +1816,11 @@ int compile(struct ASTNode *first_node)
 
     int res = 0;
     res = third_pass(first_node);
-    fclose(compiler_fp_output);
+    if (compiler_fp_output != NULL)
+    {
+        fclose(compiler_fp_output);
+    }
+
     if (res)
     {
         if (remove(compiler_output_filename))

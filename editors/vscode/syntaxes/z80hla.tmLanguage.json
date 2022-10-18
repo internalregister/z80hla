@@ -24,7 +24,7 @@
             "patterns": [
 				{
 					"name": "keyword.control.z80hla",
-					"match": "\\s*(?:((#)\\s*(include|define|endif|else|ifdef|ifndef|print|origin|output_on|output_off|include_binary|output_file|cpu_type)))\\b"
+					"match": "\\s*(?:((#)\\s*(include|define|endif|else|ifdef|ifndef|print|origin|output_on|output_off|include_binary|output_file|cpu_type|assembleall_on|assembleall_off|jrinloops_on|jrinloops_off)))\\b"
 				},
                 {
                     "name": "keyword.op.z80hla",
@@ -36,7 +36,7 @@
                 },
 				{
                     "name": "keyword.control.z80hla",
-                    "match": "\\b(function|inline|if|else|library|data|from|interrupt|const|sizeof|while|do|forever|break|length)\\b"
+                    "match": "\\b(function|inline|if|else|library|data|of|from|interrupt|const|sizeof|while|do|forever|break|breakif|length)\\b"
                 }, 
                 {
                     "name": "storage.type.z80hla",

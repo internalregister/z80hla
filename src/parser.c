@@ -195,12 +195,17 @@ char *node_type_names[] = {
     "NODE_TYPE_DO",
     "NODE_TYPE_FOREVER",
     "NODE_TYPE_BREAK",
+    "NODE_TYPE_BREAKIF",
     "NODE_TYPE_STRING",
     "NODE_TYPE_OUTPUT_ON",
     "NODE_TYPE_OUTPUT_OFF",
     "NODE_TYPE_INCLUDE_BINARY",
     "NODE_TYPE_SET_OUTPUT_FILE",
-    "NODE_TYPE_SET_CPU_TYPE"
+    "NODE_TYPE_SET_CPU_TYPE",
+    "NODE_TYPE_ASSEMBLEALL_ON",
+    "NODE_TYPE_ASSEMBLEALL_OFF",
+    "NODE_TYPE_JRINLOOPS_ON",
+    "NODE_TYPE_JRINLOOPS_OFF"
 };
 
 void fprint_ast(FILE *fp, struct ASTNode *node)
@@ -352,7 +357,7 @@ static int parse_expression_identifier(struct Lexer *lexer, struct ASTNode **out
 
     if (peek_next_token(lexer, &token, TRUE)) return 1;
     struct ASTNode *last_identifier_node = expression_node, *last_parent_node = NULL;
-    while(token.type == TOKEN_TYPE_DOT)
+    while(token.type == TOKEN_TYPE_DOT || token.type == TOKEN_TYPE_DOT_PIPE)
     {
         if (get_next_token(lexer, &token, TRUE)) return 1;
 
@@ -1475,6 +1480,37 @@ static int parse_block(struct Lexer *lexer, struct ASTNode *parent_node, struct 
 
             break;
         }
+        case TOKEN_TYPE_BREAKIF:
+        {
+            ast_node = create_node(NODE_TYPE_BREAKIF, lexer);
+
+            struct Token inner_token;
+
+            if (get_next_token(lexer, &inner_token, TRUE)) return 1;
+            if (inner_token.type != TOKEN_TYPE_LPAREN)
+            {
+                write_compiler_error(lexer->filename, lexer->current_line, "Expected \"(\" in breakif statement, found \"%.*s\"", inner_token.size, inner_token.value);
+                return 1;
+            }
+
+            if (get_next_token(lexer, &inner_token, TRUE)) return 1;
+            if (inner_token.type != TOKEN_TYPE_COND && (inner_token.type != TOKEN_TYPE_REGISTER || !is_str_equal(inner_token.value, inner_token.size, "c")))
+            {
+                write_compiler_error(lexer->filename, lexer->current_line, "Expected condition in breakif statement, found \"%.*s\"", inner_token.size, inner_token.value);
+                return 1;
+            }
+            ast_node->str_value = inner_token.value;
+            ast_node->str_size = inner_token.size;
+
+            if (get_next_token(lexer, &inner_token, TRUE)) return 1;
+            if (inner_token.type != TOKEN_TYPE_RPAREN)
+            {
+                write_compiler_error(lexer->filename, lexer->current_line, "Expected \")\" after condition in breakif statement, found \"%.*s\"", inner_token.size, inner_token.value);
+                return 1;
+            }
+
+            break;
+        }
         case TOKEN_TYPE_PRINT:
         {
             ast_node = create_node(NODE_TYPE_PRINT, lexer);            
@@ -1799,6 +1835,34 @@ static struct ASTNode *parse_struct_init(struct Lexer *lexer)
     return struct_init_node;
 }
 
+static int parse_data_init(struct Lexer *lexer, struct ASTNode **expression_node)
+{
+    struct Token token;
+
+    if (peek_next_token(lexer, &token, FALSE)) { return 1; }
+    if (token.type == TOKEN_TYPE_LCURLY)
+    {
+        *expression_node = parse_struct_init(lexer);
+        if (*expression_node == NULL) { return 1; }
+    }
+    else if (token.type == TOKEN_TYPE_STRING)
+    {
+        *expression_node = create_node_str(NODE_TYPE_STRING, lexer, token.value, token.size);
+        get_next_token(lexer, &token, FALSE);
+    }
+    else
+    {
+        *expression_node = parse_expression(lexer);
+        if (*expression_node == NULL)
+        {
+            write_compiler_error(lexer->filename, lexer->current_line, "Expected expression, found \"%.*s\"", token.size, token.value);
+            return 1;
+        }
+    }
+
+    return 0;
+}
+
 static int parse_data(struct Lexer *lexer, struct ASTNode *data_node)
 {
     struct Token token;
@@ -1855,32 +1919,15 @@ static int parse_data(struct Lexer *lexer, struct ASTNode *data_node)
         return 1;
     }
 
+    data_node->children_count = 2;
+
     if (token.type == TOKEN_TYPE_EQUALS)
     {
         // Initialized data
         struct ASTNode *expression_node = NULL, *data_value_node = NULL, *last_data_value_node = NULL;
         do
         {
-            if (peek_next_token(lexer, &token, FALSE)) { return 1; }
-            if (token.type == TOKEN_TYPE_LCURLY)
-            {
-                expression_node = parse_struct_init(lexer);
-                if (expression_node == NULL) { return 1; }
-            }
-            else if (token.type == TOKEN_TYPE_STRING)
-            {
-                expression_node = create_node_str(NODE_TYPE_STRING, lexer, token.value, token.size);
-                get_next_token(lexer, &token, FALSE);
-            }
-            else
-            {
-                expression_node = parse_expression(lexer);
-                if (expression_node == NULL)
-                {
-                    write_compiler_error(lexer->filename, lexer->current_line, "Expected expression, found \"%.*s\"", token.size, token.value);
-                    return 1;
-                }
-            }            
+            if (parse_data_init(lexer, &expression_node)) { return 1; }
 
             data_value_node = create_node(NODE_TYPE_DATA_VALUE, lexer);
             data_value_node->children_count = 2;
@@ -1943,6 +1990,17 @@ static int parse_data(struct Lexer *lexer, struct ASTNode *data_node)
             }
 
             if (get_next_token(lexer, &token, FALSE)) { return 1; }
+            if (token.type == TOKEN_TYPE_OF)
+            {
+                struct ASTNode *expression_node = NULL;
+                if (parse_data_init(lexer, &expression_node)) { return 1; }
+
+                data_size_node->children[1] = expression_node;
+                data_size_node->children_count = 2;
+
+                if (get_next_token(lexer, &token, FALSE)) { return 1; }
+            }
+            
             if (token.type != TOKEN_TYPE_NEWLINE)
             {
                 write_compiler_error(lexer->filename, lexer->current_line, "Expected new line, found \"%.*s\"", token.size, token.value);
@@ -1973,9 +2031,7 @@ static int parse_data(struct Lexer *lexer, struct ASTNode *data_node)
     {
         write_compiler_error(lexer->filename, lexer->current_line, "Expected \"=\" or \"[\" or \"from\", found \"%.*s\"", token.size, token.value);
         return 1;
-    }
-    
-    data_node->children_count = 2;
+    }    
 
     in_symbol = FALSE;
 
@@ -2597,6 +2653,46 @@ struct ASTNode *parse(struct Lexer *lexer, struct ASTNode *parent_node, struct A
                         }
 
                         add_define_identifier(token.value, token.size);
+
+                        break;
+                    }
+                    case TOKEN_TYPE_ASSEMBLEALL_ON:
+                    case TOKEN_TYPE_ASSEMBLEALL_OFF:
+                    {
+                        enum TokenType directiveType = token.type;
+                        if (get_next_token(lexer, &token, FALSE)) { return NULL; }
+                        if (token.type != TOKEN_TYPE_NEWLINE)
+                        {
+                            write_compiler_error(lexer->filename, lexer->current_line, "Expected new line after directive, found \"%.*s\"", token.size, token.value);
+                            return NULL;
+                        }
+
+                        struct ASTNode *ast_node = create_node(directiveType == TOKEN_TYPE_ASSEMBLEALL_ON ? NODE_TYPE_ASSEMBLEALL_ON : NODE_TYPE_ASSEMBLEALL_OFF, lexer);
+                        
+                        ast_node_main->children[0] = ast_node;
+                        ast_node_main->children[1] = create_node(NODE_TYPE_MAIN, lexer);
+                        ast_node_main->children_count = 2;
+                        ast_node_main = ast_node_main->children[1];
+
+                        break;
+                    }
+                    case TOKEN_TYPE_JRINLOOPS_ON:
+                    case TOKEN_TYPE_JRINLOOPS_OFF:
+                    {
+                        enum TokenType directiveType = token.type;
+                        if (get_next_token(lexer, &token, FALSE)) { return NULL; }
+                        if (token.type != TOKEN_TYPE_NEWLINE)
+                        {
+                            write_compiler_error(lexer->filename, lexer->current_line, "Expected new line after directive, found \"%.*s\"", token.size, token.value);
+                            return NULL;
+                        }
+
+                        struct ASTNode *ast_node = create_node(directiveType == TOKEN_TYPE_JRINLOOPS_ON ? NODE_TYPE_JRINLOOPS_ON : NODE_TYPE_JRINLOOPS_OFF, lexer);
+                        
+                        ast_node_main->children[0] = ast_node;
+                        ast_node_main->children[1] = create_node(NODE_TYPE_MAIN, lexer);
+                        ast_node_main->children_count = 2;
+                        ast_node_main = ast_node_main->children[1];
 
                         break;
                     }

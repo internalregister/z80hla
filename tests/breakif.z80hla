@@ -1,0 +1,32 @@
+#jrinloops_on
+
+ld bc, 0x1000
+ld a, 100
+forever
+{
+    dec a
+    breakif(z)
+
+    out (c), a
+}
+
+nop
+nop
+
+while(c)
+{
+    ld a, 100
+    do
+    {
+        ld a, 77
+        while(nz)
+        {
+            ld a, 200
+            breakif(nc)
+            ld b, a
+        }
+        ld c, a
+    } while(p)
+    ld h, a
+}
+
