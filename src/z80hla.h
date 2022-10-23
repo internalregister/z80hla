@@ -39,7 +39,7 @@
 // #define DEBUG 1
 
 #define Z80HLA_VERSION_HI   "1"
-#define Z80HLA_VERSION_LO   "1"
+#define Z80HLA_VERSION_LO   "2"
 
 #define INCLUDE_STACK_MAX   10
 
@@ -228,9 +228,10 @@ enum NodeType
     NODE_TYPE_SET_OUTPUT_FILE,
     NODE_TYPE_SET_CPU_TYPE,
     NODE_TYPE_ASSEMBLEALL_ON,
-    NODE_TYPE_ASSEMBLEALL_OFF    ,
+    NODE_TYPE_ASSEMBLEALL_OFF,
     NODE_TYPE_JRINLOOPS_ON,
-    NODE_TYPE_JRINLOOPS_OFF
+    NODE_TYPE_JRINLOOPS_OFF,
+    NODE_TYPE_ARGUMENT
 };
 
 #define MAX_AST_NODE_CHILDREN   16
@@ -252,6 +253,7 @@ struct ASTNode
 };
 
 BOOL is_node_expression_type(enum NodeType node_type);
+BOOL is_node_identifier_expression(struct ASTNode *node);
 
 // Lexer
 
@@ -262,13 +264,36 @@ int peek_next_token(struct Lexer *lexer, struct Token *token, BOOL skip_newline)
 
 // Parser
 
+struct InlineArgument
+{
+	char *name;
+	int name_size;
+
+	struct InlineArgument *next;		
+};
+
+struct InlineSymbol
+{
+	char *name;
+	int name_size;
+	char *library_name;
+	int library_name_size;
+
+	struct ASTNode *node;
+
+    int argument_count;
+	struct InlineArgument *arguments;
+
+	struct InlineSymbol *next;
+};
+
 struct ASTNode *create_node(enum NodeType type, struct Lexer *lexer);
 struct ASTNode *create_node_str(enum NodeType type, struct Lexer *lexer, char *str_value, int str_size);
 struct ASTNode *create_node_str2(enum NodeType type, struct Lexer *lexer, char *str_value, int str_size, char *str_value2, int str_size2);
 struct ASTNode *create_node_num(enum NodeType type, struct Lexer *lexer, int64_t value);
 struct ASTNode *create_node_num2(enum NodeType type, struct Lexer *lexer, int64_t value, int64_t value2);
 struct ASTNode *duplicate_node(struct ASTNode *node_to_duplicate);
-struct ASTNode *duplicate_node_deep(struct ASTNode *node_to_duplicate);
+struct ASTNode *duplicate_node_and_replace_deep(struct ASTNode *node_to_duplicate, struct InlineSymbol *inline_symbol, struct ASTNode *node_arguments);
 BOOL is_node_expression(struct ASTNode *node);
 void fprint_ast(FILE *fp, struct ASTNode *node);
 struct ASTNode *parse(struct Lexer *lexer, struct ASTNode *parent_node, struct ASTNode **last_node);
@@ -375,8 +400,10 @@ struct DataSymbol *get_data_symbol(char *name, int name_size, char *library_name
 struct DataSymbol *get_last_data_symbol();
 void fprintf_data_symbols(FILE *fp);
 
-int add_inline_symbol(char *name, int name_size, char *library_name, int library_name_size, struct ASTNode *node);
-struct ASTNode *get_inline_symbol_node(char *name, int name_size, char *library_name, int library_name_size);
+struct InlineSymbol *add_inline_symbol(char *name, int name_size, char *library_name, int library_name_size, struct ASTNode *node);
+struct InlineSymbol *get_inline_symbol(char *name, int name_size, char *library_name, int library_name_size);
+int add_inline_symbol_argument(struct InlineSymbol *inline_symbol, char *name, int name_size);
+int get_inline_symbol_argument_index(struct InlineSymbol *inline_symbol, char *name, int name_size);
 
 void push_loop_label(char *label);
 char *peek_loop_label();
@@ -423,7 +450,7 @@ void dump_output(FILE *fp);
 // Ops
 
 int compile_op(struct ASTNode *node, BOOL add_to_output, int *length);
-void fprint_operand_node(FILE *fp, struct ASTNode *node);
+void fprint_operand_node(FILE *fp, struct ASTNode *node, BOOL top_node);
 void fprint_op(FILE *fp, struct ASTNode *node);
 
 // Expression

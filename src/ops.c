@@ -5413,7 +5413,7 @@ int compile_op(struct ASTNode *node, BOOL add_to_output, int *length)
     return 1;
 }
 
-void fprint_operand_node(FILE *fp, struct ASTNode *node)
+void fprint_operand_node(FILE *fp, struct ASTNode *node, BOOL top_node)
 {
     switch(node->type)
     {
@@ -5450,33 +5450,42 @@ void fprint_operand_node(FILE *fp, struct ASTNode *node)
                     is_str_equal(node->str_value, node->str_size, "length"))
                 {
                     fprintf(fp, "(");
-                    fprint_operand_node(fp, node->children[0]);
+                    fprint_operand_node(fp, node->children[0], FALSE);
                     fprintf(fp, ")");
                 }
                 else
                 {
-                    fprint_operand_node(fp, node->children[0]);
+                    fprint_operand_node(fp, node->children[0], FALSE);
                 }
             }
             else if (node->children_count == 2)
-            {   
-                fprint_operand_node(fp, node->children[0]);             
+            {                
+                if (!top_node && (node->str_size == 0 || node->str_value[0] != '.')) { fprintf(fp, "("); }
+                fprint_operand_node(fp, node->children[0], FALSE);
                 fprintf(fp, "%.*s", node->str_size, node->str_value);
-                fprint_operand_node(fp, node->children[1]);
+                fprint_operand_node(fp, node->children[1], FALSE);
+                if (!top_node && (node->str_size == 0 || node->str_value[0] != '.')) { fprintf(fp, ")"); }
             }
             break;
         }
         case NODE_TYPE_INDEX_REGISTER:
         {
-            fprint_operand_node(fp, node->children[0]);
-            fprint_operand_node(fp, node->children[1]);            
+            fprint_operand_node(fp, node->children[0], FALSE);
+            fprint_operand_node(fp, node->children[1], TRUE);
             break;
         }
         case NODE_TYPE_LPAREN:
         {
             fprintf(fp, "(");
-            fprint_operand_node(fp, node->children[0]);
+            fprint_operand_node(fp, node->children[0], TRUE);
             fprintf(fp, ")");
+            break;
+        }
+        case NODE_TYPE_INDEX:
+        {
+            fprintf(fp, "[");
+            fprint_operand_node(fp, node->children[0], TRUE);
+            fprintf(fp, "]");
             break;
         }
         default:
@@ -5503,7 +5512,7 @@ void fprint_op(FILE *fp, struct ASTNode *node)
             fprintf(fp, ",");
         }
         fprintf(fp, " ");
-        fprint_operand_node(fp, node->children[i]);
+        fprint_operand_node(fp, node->children[i], TRUE);
     }
     fprintf(fp, "\n");
 }

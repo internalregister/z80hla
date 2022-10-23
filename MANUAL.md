@@ -275,7 +275,7 @@ const stuff = 123
 
 ### Code blocks
 
-**function**
+**function name() {...}**
 
 Defines a function without arguments.
 Functionally the same as declaring a label and ending with `ret`.  
@@ -302,7 +302,7 @@ do_stuff:
   call do_stuff
 ```
 
-**interrupt**
+**interrupt name() {...}**
 
 Defines an interrupt function.  
 Functionally it's the same as declaring a label and ending the block with `reti` or `retn` (for interrupts named *nmi* and if available for the given cpu type).
@@ -329,27 +329,70 @@ nmi:
   reti
 ```
 
-***inline***
+**inline name([identifier, ...]) {...}**
 
 Defines a block of code that will be included wherever it's called.  
-Arguments are not supported.  
+Arguments are supported in inlines for expressions in instructions.  
+When using arguments while calling an inline block, the arguments can be anything valid as an instructions operand (expression, register, condition, etc).  
+Z80HLA does not have a true preprocessor, so the arguments and the code block are evaluated independently before the final code is put together and not just replaced as a macro in other languages.  
+Check the generated code for `print_n` in the example below, for the side-effects of this.  
 
 Example:
 ```
+struct Info
+{
+  byte type, val1, val2, val3
+}
+
 jp main
+
+data Info info[10]
+
 inline print_a()
 {
   ld bc, OUTPUT_CHAR
   out (c), a
 }
 
+inline print_x(x)
+{
+  ld bc, OUTPUT_CHAR
+  ld a, 10 + x + x
+  out (c), a
+}
+
+inline send_info_val1(index, out_address)
+{
+  ld a, (info[index] + Info.val1)
+  ld bc, out_address
+  out (c), a
+}
+
 main:
   print_a() 
+  print_n(2*3)
+  send_info_va1(3, OUTPUT_CHAR)
 ```
 is equivalent to  
 ```
   jp main
+
+info:
+  db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  db 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+  
 main:
+  ld bc, OUTPUT_CHAR
+  out (c), a
+
+  ld bc, OUTPUT_CHAR
+  ; 2*3 is inserted as an expression and is evaluated seperately, hence the ()
+  ld a, 10 + (2*3) + (2*3)
+  out (c), a
+
+  ld a, (info + 13)
   ld bc, OUTPUT_CHAR
   out (c), a
 ```

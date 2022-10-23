@@ -468,10 +468,12 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 break;
             }
             case NODE_TYPE_FUNCTION_CALL:
-            {                
-                struct ASTNode *inline_node = get_inline_symbol_node(node->str_value, node->str_size, node->str_value2, node->str_size2);
-                if (inline_node != NULL)
+            {
+                struct InlineSymbol *inline_symbol = get_inline_symbol(node->str_value, node->str_size, node->str_value2, node->str_size2);                
+                if (inline_symbol != NULL)
                 {
+                    struct ASTNode *inline_node = inline_symbol->node;
+
                     if (is_inline_symbol_in_stack(node->str_value, node->str_size, node->str_value2, node->str_size2))
                     {
                         if (node->str_size2 > 0)
@@ -486,8 +488,15 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                         }
                     }
 
+                    // check number of arguments
+                    if (inline_symbol->argument_count != node->num_value)
+                    {
+                        write_compiler_error(node->filename, node->file_line, "Invalid argument count in inline call, the number of arguments should be %d", inline_symbol->argument_count);
+                        return 1;
+                    }
+
                     // inline
-                    inline_node = duplicate_node_deep(inline_node);
+                    inline_node = duplicate_node_and_replace_deep(inline_node, inline_symbol, node->children[0]);
 
                     if (inline_node->children_count == 0)
                     {
@@ -518,6 +527,12 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 else
                 {
                     // function call
+
+                    if (node->num_value > 0)
+                    {
+                        write_compiler_error(node->filename, node->file_line, "No arguments supported for function calls", 0);
+                        return 1;
+                    }
 
                     struct ASTNode *call_node = create_node_str(NODE_TYPE_OP, NULL, "call", 4);
                     call_node->filename = node->filename;
@@ -1031,7 +1046,7 @@ static void fprint_db_list(FILE *fp, struct ASTNode *node, uint32_t value, struc
     }
     else
     {
-        fprint_operand_node(fp, expression_node);
+        fprint_operand_node(fp, expression_node, TRUE);
     }
 
     fprint_db_count++;

@@ -1,5 +1,14 @@
 # Change Log
+## [1.2] - 2022-10-23
  
+### Added  
+
+* Support for arguments for inline code blocks
+
+### Fixed
+
+* bug when showing certain expression in output listing file
+
 ## [1.1] - 2022-10-18
  
 ### Added  

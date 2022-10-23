@@ -157,3 +157,13 @@ BOOL is_node_expression_type(enum NodeType node_type)
         node_type == NODE_TYPE_EXPRESSION_16 || node_type == NODE_TYPE_EXPRESSION_32 ||
         node_type == NODE_TYPE_EXPRESSION_3;
 }
+
+BOOL is_node_identifier_expression(struct ASTNode *node)
+{
+    return
+        node->type == NODE_TYPE_EXPRESSION &&
+        node->str_size > 0 &&
+        ((node->str_value[0] >= 'a' && node->str_value[0] <= 'z') ||
+         (node->str_value[0] >= 'A' && node->str_value[0] <= 'Z') ||
+         (node->str_value[0] == '_'));
+}

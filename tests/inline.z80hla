@@ -23,3 +23,15 @@ inline testInline2()
     testInline()
     nop
 }
+
+const const1 = 10
+
+inline inline_with_arguments(arg1, arg2, arg3)
+{
+    ld a, arg1 + 10
+    ld arg2, arg1 * arg1
+    jp arg3, arg1
+    ld a, (arg2)
+}
+
+inline_with_arguments(const1+5*2, hl, nz)

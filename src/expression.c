@@ -139,7 +139,11 @@ static int get_size_and_length_of_identifier(struct ASTNode *identifier_node, in
 int resolve_expression(struct ASTNode *node, int64_t *result)
 {
     int64_t temp1, temp2;
-    assert(is_node_expression(node));
+    if (!is_node_expression(node))
+    {
+        write_compiler_error(node->filename, node->file_line, "Invalid expression", 0);
+        return 1;
+    }
 
     if (node->str_size == 0)
     {

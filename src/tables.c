@@ -982,21 +982,9 @@ void fprintf_data_symbols(FILE *fp)
 	fprintf(fp, "]");
 }
 
-struct InlineSymbol
-{
-	char *name;
-	int name_size;
-	char *library_name;
-	int library_name_size;
-
-	struct ASTNode *node;
-
-	struct InlineSymbol *next;
-};
-
 static struct InlineSymbol *first_inline_symbol = NULL;
 
-int add_inline_symbol(char *name, int name_size, char *library_name, int library_name_size, struct ASTNode *node)
+struct InlineSymbol *add_inline_symbol(char *name, int name_size, char *library_name, int library_name_size, struct ASTNode *node)
 {
 	struct InlineSymbol *current_inline = first_inline_symbol, *last_inline = NULL;
 
@@ -1005,7 +993,7 @@ int add_inline_symbol(char *name, int name_size, char *library_name, int library
 		if (is_str_equal2(name, name_size, current_inline->name, current_inline->name_size) &&
 		    is_str_equal2(library_name, library_name_size, current_inline->library_name, current_inline->library_name_size))
 		{
-			return 1;
+			return NULL;
 		}
 
 		last_inline = current_inline;
@@ -1018,6 +1006,8 @@ int add_inline_symbol(char *name, int name_size, char *library_name, int library
 	new_inline->library_name = library_name;
 	new_inline->library_name_size = library_name_size;
 	new_inline->node = node;
+	new_inline->argument_count = 0;
+	new_inline->arguments = NULL;
 	new_inline->next = NULL;
 
 	if (last_inline == NULL)
@@ -1029,10 +1019,10 @@ int add_inline_symbol(char *name, int name_size, char *library_name, int library
 		last_inline->next = new_inline;
 	}
 
-	return 0;
+	return new_inline;
 }
 
-struct ASTNode *get_inline_symbol_node(char *name, int name_size, char *library_name, int library_name_size)
+struct InlineSymbol *get_inline_symbol(char *name, int name_size, char *library_name, int library_name_size)
 {
 	struct InlineSymbol *current_inline = first_inline_symbol;
 
@@ -1041,13 +1031,66 @@ struct ASTNode *get_inline_symbol_node(char *name, int name_size, char *library_
 		if (is_str_equal2(name, name_size, current_inline->name, current_inline->name_size) &&
 		    is_str_equal2(library_name, library_name_size, current_inline->library_name, current_inline->library_name_size))
 		{
-			return current_inline->node;
+			return current_inline;
 		}
 
 		current_inline = current_inline->next;
 	}
 
 	return NULL;
+}
+
+int add_inline_symbol_argument(struct InlineSymbol *inline_symbol, char *name, int name_size)
+{
+	struct InlineArgument *current_argument = inline_symbol->arguments, *last_argument = NULL;
+
+	while(current_argument != NULL)
+	{
+		if (is_str_equal2(name, name_size, current_argument->name, current_argument->name_size))
+		{
+			return 1;
+		}
+
+		last_argument = current_argument;
+		current_argument = current_argument->next;
+	}
+
+	struct InlineArgument *new_argument = (struct InlineArgument *)malloc(sizeof(struct InlineArgument));
+	new_argument->name = name;
+	new_argument->name_size = name_size;
+	new_argument->next = NULL;
+
+	if (last_argument == NULL)
+	{
+		inline_symbol->arguments = new_argument;
+	}
+	else
+	{
+		last_argument->next = new_argument;
+	}
+
+	inline_symbol->argument_count++;
+
+	return 0;
+}
+
+int get_inline_symbol_argument_index(struct InlineSymbol *inline_symbol, char *name, int name_size)
+{	
+	struct InlineArgument *current_argument = inline_symbol->arguments;
+	int index = 0;	
+
+	while(current_argument != NULL)
+	{
+		if (is_str_equal2(name, name_size, current_argument->name, current_argument->name_size))
+		{
+			return index;
+		}
+
+		current_argument = current_argument->next;
+		index++;
+	}
+
+	return -1;
 }
 
 struct LoopLabel

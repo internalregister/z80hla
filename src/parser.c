@@ -117,9 +117,27 @@ struct ASTNode *duplicate_node(struct ASTNode *node_to_duplicate)
     return node;
 }
 
-struct ASTNode *duplicate_node_deep(struct ASTNode *node_to_duplicate)
+struct ASTNode *duplicate_node_and_replace_deep(struct ASTNode *node_to_duplicate, struct InlineSymbol *inline_symbol, struct ASTNode *node_arguments)
 {
     assert(node_to_duplicate != NULL);
+
+    struct ASTNode *original_node_arguments = node_arguments;
+
+    // replace node by inline argument equivalent
+    if (node_arguments != NULL && is_node_identifier_expression(node_to_duplicate))
+    {
+        int n = get_inline_symbol_argument_index(inline_symbol, node_to_duplicate->str_value, node_to_duplicate->str_size);
+        if (n != -1)
+        {
+            for(int i = 0; i < n; i++)
+            {
+                node_arguments = node_arguments->children[1];
+                assert(node_arguments != NULL);
+            }
+
+            node_to_duplicate = node_arguments->children[0];
+        }
+    }
 
     struct ASTNode *node = duplicate_node(node_to_duplicate);
 
@@ -127,7 +145,7 @@ struct ASTNode *duplicate_node_deep(struct ASTNode *node_to_duplicate)
     {
         if (node->children[i] != NULL)
         {
-            node->children[i] = duplicate_node_deep(node->children[i]);
+            node->children[i] = duplicate_node_and_replace_deep(node->children[i], inline_symbol, original_node_arguments);
         }
     }
 
@@ -205,7 +223,8 @@ char *node_type_names[] = {
     "NODE_TYPE_ASSEMBLEALL_ON",
     "NODE_TYPE_ASSEMBLEALL_OFF",
     "NODE_TYPE_JRINLOOPS_ON",
-    "NODE_TYPE_JRINLOOPS_OFF"
+    "NODE_TYPE_JRINLOOPS_OFF",
+    "NODE_TYPE_ARGUMENT"
 };
 
 void fprint_ast(FILE *fp, struct ASTNode *node)
@@ -959,7 +978,7 @@ static int parse_op_operand(struct Lexer *lexer, struct ASTNode *op_node)
                     peek_next_token(lexer, &token, TRUE);
                     if (token.type == TOKEN_TYPE_PLUS || token.type == TOKEN_TYPE_MINUS)
                     {
-                        // (register +/- expression)                    
+                        // (register +/- expression)
                         struct ASTNode *index_register_node = create_node(NODE_TYPE_INDEX_REGISTER, lexer);                        
 
                         index_register_node->children_count = 2;
@@ -1032,7 +1051,7 @@ static int parse_op_operand(struct Lexer *lexer, struct ASTNode *op_node)
             }
         }
     }
-     
+        
     op_node->children[op_node->children_count] = operand_node;
     op_node->children_count++;    
 
@@ -1437,12 +1456,61 @@ static int parse_block(struct Lexer *lexer, struct ASTNode *parent_node, struct 
                 return 1;
             }
 
-            if (get_next_token(lexer, &inner_token, FALSE)) return 1;
-            if (inner_token.type != TOKEN_TYPE_RPAREN)
+            struct ASTNode *last_argument_node = NULL;
+            int argument_count = 0;
+            BOOL argument_expected = FALSE;
+            while(TRUE)
             {
-                write_compiler_error(lexer->filename, lexer->current_line, "Expected \")\" in function call, found \"%.*s\"", inner_token.size, inner_token.value);
-                return 1;
+                if (peek_next_token(lexer, &inner_token, FALSE)) return 1;
+                if (inner_token.type == TOKEN_TYPE_RPAREN)
+                {
+                    if (argument_expected)
+                    {
+                        write_compiler_error(lexer->filename, lexer->current_line, "Argument expected, found \"%.*s\"", inner_token.size, inner_token.value);
+                        return 1;
+                    }
+
+                    if (get_next_token(lexer, &inner_token, FALSE)) return 1;
+                    break;
+                }
+
+                struct ASTNode *argument_node = create_node(NODE_TYPE_ARGUMENT, lexer);
+                if (parse_op_operand(lexer, argument_node))
+                {
+                    return 1;
+                }
+                argument_count++;
+                argument_expected = FALSE;
+
+                if (last_argument_node == NULL)
+                {
+                    ast_node->children_count = 1;
+                    ast_node->children[0] = argument_node;
+                }
+                else
+                {
+                    last_argument_node->children_count = 2;
+                    last_argument_node->children[1] = argument_node;                    
+                }
+                last_argument_node = argument_node;
+
+                if (get_next_token(lexer, &inner_token, FALSE)) return 1;
+                if (inner_token.type == TOKEN_TYPE_RPAREN)
+                {
+                    break;
+                }
+                if (inner_token.type == TOKEN_TYPE_COMMA)
+                {
+                    argument_expected = TRUE;
+                }
+                else
+                {
+                    write_compiler_error(lexer->filename, lexer->current_line, "Expected \")\" or \",\" in function call, found \"%.*s\"", inner_token.size, inner_token.value);
+                    return 1;
+                }
             }
+
+            ast_node->num_value = argument_count;
 
             break;
         }
@@ -1594,14 +1662,16 @@ static int parse_inline(struct Lexer *lexer)
     }
 
     struct ASTNode *ast_node_main = create_node(NODE_TYPE_MAIN, lexer);
+
+    struct InlineSymbol *inline_symbol = NULL;
     
     if (!in_library)
     {
-        add_inline_symbol(token.value, token.size, "", 0, ast_node_main);
+        inline_symbol = add_inline_symbol(token.value, token.size, "", 0, ast_node_main);
     }
     else
     {
-        add_inline_symbol(token.value, token.size, current_library_name, current_library_name_size, ast_node_main);
+        inline_symbol = add_inline_symbol(token.value, token.size, current_library_name, current_library_name_size, ast_node_main);
     }
 
     in_symbol = TRUE;
@@ -1614,12 +1684,50 @@ static int parse_inline(struct Lexer *lexer)
         write_compiler_error(lexer->filename, lexer->current_line, "Expected \"(\", found \"%.*s\"", token.size, token.value);
         return 1;
     }
-    if (get_next_token(lexer, &token, TRUE)) { return 1; }
-    if (token.type != TOKEN_TYPE_RPAREN)
+
+    BOOL argument_expected = FALSE;
+    do
     {
-        write_compiler_error(lexer->filename, lexer->current_line, "Expected \")\", found \"%.*s\"", token.size, token.value);
-        return 1;
-    }
+        if (get_next_token(lexer, &token, TRUE)) { return 1; }
+
+        if (token.type != TOKEN_TYPE_IDENTIFIER && argument_expected)        
+        {
+            write_compiler_error(lexer->filename, lexer->current_line, "Parameter expected, found \"%.*s\"", token.size, token.value);
+            return 1;
+        }
+
+        if (token.type == TOKEN_TYPE_RPAREN)
+        {
+            break;
+        }        
+
+        if (token.type == TOKEN_TYPE_IDENTIFIER)
+        {
+            if (add_inline_symbol_argument(inline_symbol, token.value, token.size))
+            {
+                write_compiler_error(lexer->filename, lexer->current_line, "Duplicate parameter \"%.*s\"", token.size, token.value);
+                return 1;
+            }
+
+            argument_expected = FALSE;
+
+            if (get_next_token(lexer, &token, TRUE)) { return 1; }
+            if (token.type == TOKEN_TYPE_RPAREN)
+            {
+                break;
+            }
+            else if (token.type == TOKEN_TYPE_COMMA)
+            {
+                argument_expected = TRUE;
+            }
+            else
+            {
+                write_compiler_error(lexer->filename, lexer->current_line, "Expected \",\" or \")\", found \"%.*s\"", token.size, token.value);
+                return 1;
+            }
+        }
+    } while(TRUE);
+
     if (get_next_token(lexer, &token, TRUE)) { return 1; }
     if (token.type != TOKEN_TYPE_LCURLY)
     {

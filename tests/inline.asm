@@ -17,3 +17,8 @@ label2:
     nop
     jp label
     jp label2
+
+    ld a, (10+5*2) + 10
+    ld hl, (10+5*2) * (10+5*2)
+    jp nz, 10+5*2
+    ld a, (hl)

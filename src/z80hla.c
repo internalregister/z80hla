@@ -71,7 +71,7 @@ void print_usage()
 	printf("-a\t--assembleall\t\tAssemble all library symbols and not just the ones referenced\n");
 	printf("-j\t--jrloop\t\tGenerate jr instead of jp when possible in loops\n");
 	printf("-s\t--symbols FILE\t\tOutput symbols JSON file\n");
-	printf("-l\t--list FILE\t\tOuput listing of instructions without high-level constructs\n");
+	printf("-l\t--list FILE\t\tOutput listing of instructions without high-level constructs\n");
 	printf("\n");
 }
 
