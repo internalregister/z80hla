@@ -774,6 +774,14 @@ static int get_token(struct Lexer *lexer, struct Token *token, BOOL skip_newline
                     {
                         token->type = TOKEN_TYPE_OF;
                     }
+                    else if (is_str_equal_token_value(token, "continue"))
+                    {
+                        token->type = TOKEN_TYPE_CONTINUE;
+                    }
+                    else if (is_str_equal_token_value(token, "continueif"))
+                    {
+                        token->type = TOKEN_TYPE_CONTINUEIF;
+                    }
                     else if (is_str_equal_token_value(token, "byte") || is_str_equal_token_value(token, "word") || is_str_equal_token_value(token, "dword"))
                     {
                         token->type = TOKEN_TYPE_DATA_TYPE;

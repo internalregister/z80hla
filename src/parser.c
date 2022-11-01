@@ -1579,6 +1579,43 @@ static int parse_block(struct Lexer *lexer, struct ASTNode *parent_node, struct 
 
             break;
         }
+        case TOKEN_TYPE_CONTINUE:
+        {
+            ast_node = create_node(NODE_TYPE_CONTINUE, lexer);
+
+            break;
+        }
+        case TOKEN_TYPE_CONTINUEIF:
+        {
+            ast_node = create_node(NODE_TYPE_CONTINUEIF, lexer);
+
+            struct Token inner_token;
+
+            if (get_next_token(lexer, &inner_token, TRUE)) return 1;
+            if (inner_token.type != TOKEN_TYPE_LPAREN)
+            {
+                write_compiler_error(lexer->filename, lexer->current_line, "Expected \"(\" in continueif statement, found \"%.*s\"", inner_token.size, inner_token.value);
+                return 1;
+            }
+
+            if (get_next_token(lexer, &inner_token, TRUE)) return 1;
+            if (inner_token.type != TOKEN_TYPE_COND && (inner_token.type != TOKEN_TYPE_REGISTER || !is_str_equal(inner_token.value, inner_token.size, "c")))
+            {
+                write_compiler_error(lexer->filename, lexer->current_line, "Expected condition in continueif statement, found \"%.*s\"", inner_token.size, inner_token.value);
+                return 1;
+            }
+            ast_node->str_value = inner_token.value;
+            ast_node->str_size = inner_token.size;
+
+            if (get_next_token(lexer, &inner_token, TRUE)) return 1;
+            if (inner_token.type != TOKEN_TYPE_RPAREN)
+            {
+                write_compiler_error(lexer->filename, lexer->current_line, "Expected \")\" after condition in continueif statement, found \"%.*s\"", inner_token.size, inner_token.value);
+                return 1;
+            }
+
+            break;
+        }
         case TOKEN_TYPE_PRINT:
         {
             ast_node = create_node(NODE_TYPE_PRINT, lexer);            

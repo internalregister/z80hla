@@ -656,7 +656,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
             {
                 char *label1 = get_new_label(), *label2 = get_new_label();
 
-                push_loop_label(label2);
+                push_loop_label(label1, label2);
 
                 int inner_while_length = 0, inner_length = 0;
                 if (recursive_first_pass(node->children[0], &inner_while_length)) { return 1; }
@@ -732,7 +732,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
             {
                 char *label1 = get_new_label(), *label2 = get_new_label();
 
-                push_loop_label(label2);
+                push_loop_label(label1, label2);
 
                 int inner_do_length = 0, inner_length = 0;
                 if (recursive_first_pass(node->children[0], &inner_do_length)) { return 1; }
@@ -782,7 +782,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
             {
                 char *label1 = get_new_label(), *label2 = get_new_label();
 
-                push_loop_label(label2);
+                push_loop_label(label1, label2);
 
                 int inner_forever_length = 0, inner_length = 0;
                 if (recursive_first_pass(node->children[0], &inner_forever_length)) { return 1; }
@@ -828,7 +828,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
             }
             case NODE_TYPE_BREAK:
             {
-                char *label = peek_loop_label();
+                char *label = peek_loop_label_end();
                 if (label == NULL)
                 {
                     write_compiler_error(node->filename, node->file_line, "break not inside of loop", 0);
@@ -845,10 +845,47 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
             }
             case NODE_TYPE_BREAKIF:
             {
-                char *label = peek_loop_label();
+                char *label = peek_loop_label_end();
                 if (label == NULL)
                 {
                     write_compiler_error(node->filename, node->file_line, "breakif not inside of loop", 0);
+                    return 1;
+                }
+
+                if (check_condition_op(node, node->str_value, node->str_size)) { return 1; }
+
+                struct ASTNode *last_node = current_node->children[1];
+
+                struct ASTNode *jp_node = create_jp_cond_node(node->str_value, node->str_size, label);
+                struct ASTNode *new_node = add_main_node_to_end(jp_node, current_node);
+                new_node->children_count = 2;
+                new_node->children[1] = last_node;
+
+                break;
+            }
+            case NODE_TYPE_CONTINUE:
+            {
+                char *label = peek_loop_label_start();
+                if (label == NULL)
+                {
+                    write_compiler_error(node->filename, node->file_line, "continue not inside of loop", 0);
+                    return 1;
+                }
+
+                struct ASTNode *last_node = current_node->children[1];
+
+                struct ASTNode *new_node = add_main_node_to_end(create_jp_node(label), current_node);
+                new_node->children_count = 2;
+                new_node->children[1] = last_node;
+
+                break;
+            }
+            case NODE_TYPE_CONTINUEIF:
+            {
+                char *label = peek_loop_label_start();
+                if (label == NULL)
+                {
+                    write_compiler_error(node->filename, node->file_line, "continueif not inside of loop", 0);
                     return 1;
                 }
 

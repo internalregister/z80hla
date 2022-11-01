@@ -1,4 +1,15 @@
 # Change Log
+
+## [1.3] - 2022-11-01
+ 
+### Added  
+
+* new intructions `continue`and `continueif`
+
+### Fixed
+
+* VIM syntax not detecting end of preprocessor tags in some circumstances
+
 ## [1.2] - 2022-10-23
  
 ### Added  

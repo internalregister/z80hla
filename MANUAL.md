@@ -477,13 +477,14 @@ loop:
 
 ***break***
 
-Jumps out of the current loop.
+Jumps out of the current loop.  
 It always uses a `jp` instruction to do so.
 
 ```
 forever()
 {
   ld a, (value)
+  cp a, 0
   if (z)
   {
     break
@@ -493,14 +494,52 @@ forever()
 
 ***breakif(cond)***
 
-Jumps out of the current loop under a condition.
+Jumps out of the current loop under a condition.  
 It always uses a `jp` to do so.
 
 ```
 forever()
 {
   ld a, (value)
+  cp a, 0
   breakif(z)
+}
+```
+
+***continue***
+
+Jumps to the start of the current loop. 
+In a `while(cond)` it will jump to before teh condition test.  
+It always uses a `jp` instruction to do so.
+
+```
+forever
+{
+  ld a, (value)
+  if (z)
+  {
+    continue
+  }
+  ld a, (value2)
+  dec a
+  ld (value2), a
+}
+```
+
+***continueif(cond)***
+
+Jumps to the start of the current loop under a condition.  
+In a `while(cond)` it will jump to before teh condition test.  
+It always uses a `jp` to do so.
+
+```
+forever()
+{
+  ld a, (value)
+  continueif(z)
+  ld a, (value2)
+  dec a
+  ld (value2), a
 }
 ```
 

@@ -39,7 +39,7 @@
 // #define DEBUG 1
 
 #define Z80HLA_VERSION_HI   "1"
-#define Z80HLA_VERSION_LO   "2"
+#define Z80HLA_VERSION_LO   "3"
 
 #define INCLUDE_STACK_MAX   10
 
@@ -164,6 +164,8 @@ enum TokenType
     TOKEN_TYPE_DOT_PIPE,
     TOKEN_TYPE_JRINLOOPS_ON,
     TOKEN_TYPE_JRINLOOPS_OFF,
+    TOKEN_TYPE_CONTINUE,
+    TOKEN_TYPE_CONTINUEIF
 };
 
 struct Token
@@ -231,7 +233,9 @@ enum NodeType
     NODE_TYPE_ASSEMBLEALL_OFF,
     NODE_TYPE_JRINLOOPS_ON,
     NODE_TYPE_JRINLOOPS_OFF,
-    NODE_TYPE_ARGUMENT
+    NODE_TYPE_ARGUMENT,
+    NODE_TYPE_CONTINUE,
+    NODE_TYPE_CONTINUEIF
 };
 
 #define MAX_AST_NODE_CHILDREN   16
@@ -405,8 +409,9 @@ struct InlineSymbol *get_inline_symbol(char *name, int name_size, char *library_
 int add_inline_symbol_argument(struct InlineSymbol *inline_symbol, char *name, int name_size);
 int get_inline_symbol_argument_index(struct InlineSymbol *inline_symbol, char *name, int name_size);
 
-void push_loop_label(char *label);
-char *peek_loop_label();
+void push_loop_label(char *label_start, char *label_end);
+char *peek_loop_label_start();
+char *peek_loop_label_end();
 void pop_loop_label();
 
 void push_inline_symbol_stack(char *inline_symbol, int inline_symbol_size, char *library_name, int library_name_size);

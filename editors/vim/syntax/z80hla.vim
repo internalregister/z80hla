@@ -10,8 +10,8 @@ let s:cpo_save = &cpo
 set cpo&vim
 
 syntax keyword z80hlaConditional  if else
-syntax keyword z80hlaRepeat       while do forever break breakif
-syntax keyword z80hlaOtherKwords  break breakif 
+syntax keyword z80hlaRepeat       while do forever
+syntax keyword z80hlaOtherKwords  break breakif continue continueif
 syntax keyword z80hlaDeclaration  library function interrupt data struct from of
 syntax keyword z80hlaInstruction  nop adc add and bit call ccf cp cpd cpdr cpi cpir cpl daa dec di djnz ei ex exx halt im
 syntax keyword z80hlaInstruction  in inc ind indr ini inir jp jr ld ldd lddr ldi ldir neg or otdr otir out outd outi
@@ -22,7 +22,7 @@ syntax keyword z80hlaRegister     a b c d e f h l af af' bc de hl i r ix iy ixl 
 syntax keyword z80hlaCond         nc m p z nz pe po
 syntax keyword z80hlaType         byte word dword
 
-syntax region	z80hlaBuiltin	start="\s*\zs\(%:\|#\)\s*\(include\>\|print\>\|define\>\|ifdef\>\|ifndef\>\|endif\>\|output_on\>\|output_off\>\|include_binary\>\|else\>\|cpu_type\>\|output_file\>\|assembleall_on\>\|assembleall_off\>\|jrinloops_on\>\|jrinloops_off\>\)" end="\s"
+syntax region	z80hlaBuiltin	start="\s*\zs\(%:\|#\)\s*\(include\>\|print\>\|define\>\|ifdef\>\|ifndef\>\|endif\>\|output_on\>\|output_off\>\|include_binary\>\|else\>\|cpu_type\>\|output_file\>\|assembleall_on\>\|assembleall_off\>\|jrinloops_on\>\|jrinloops_off\>\)" end="\(\s\|\n\)"
 
 syntax match z80hlaLabel          "[a-zA-Z_][a-zA-Z_0-9]*:"
 syntax match z80hlaNumber         "\v<\d%(_?\d)*"

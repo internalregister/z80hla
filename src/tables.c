@@ -1095,17 +1095,19 @@ int get_inline_symbol_argument_index(struct InlineSymbol *inline_symbol, char *n
 
 struct LoopLabel
 {
-	char *label;
+	char *label_start;
+	char *label_end;	
 
 	struct LoopLabel *next, *prev;
 };
 
 static struct LoopLabel *first_loop_label = NULL, *last_loop_label = NULL;
 
-void push_loop_label(char *label)
+void push_loop_label(char *label_start, char *label_end)
 {
 	struct LoopLabel *new_label = (struct LoopLabel*)malloc(sizeof(struct LoopLabel));
-	new_label->label = label;
+	new_label->label_start = label_start;
+	new_label->label_end = label_end;
 	new_label->next = NULL;
 	new_label->prev = last_loop_label;
 
@@ -1121,14 +1123,24 @@ void push_loop_label(char *label)
 	last_loop_label = new_label;
 }
 
-char *peek_loop_label()
+char *peek_loop_label_start()
 {
 	if (last_loop_label == NULL)
 	{
 		return NULL;
 	}
 
-	return last_loop_label->label;
+	return last_loop_label->label_start;
+}
+
+char *peek_loop_label_end()
+{
+	if (last_loop_label == NULL)
+	{
+		return NULL;
+	}
+
+	return last_loop_label->label_end;
 }
 
 void pop_loop_label()
