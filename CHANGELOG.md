@@ -4,7 +4,7 @@
  
 ### Added  
 
-* new intructions `continue`and `continueif`
+* new instructions `continue`and `continueif`
 
 ### Fixed
 
