@@ -219,7 +219,7 @@ static struct ASTNode *create_jp_cond_node(char *cond, int cond_size, char *labe
     {
         jp_op1_node->type = NODE_TYPE_REGISTER;
     }
-    struct ASTNode *jp_op2_node = create_node_str(NODE_TYPE_EXPRESSION, NULL, label, strlen(label));
+    struct ASTNode *jp_op2_node = create_node_str(NODE_TYPE_EXPRESSION, NULL, label, (int)strlen(label));
     jp_node->children[0] = jp_op1_node;
     jp_node->children[1] = jp_op2_node;
     jp_node->children_count = 2;
@@ -243,7 +243,7 @@ static struct ASTNode *create_jr_cond_node(char *cond, int cond_size, char *labe
     {
         jp_op1_node->type = NODE_TYPE_REGISTER;
     }
-    struct ASTNode *jp_op2_node = create_node_str(NODE_TYPE_EXPRESSION, NULL, label, strlen(label));
+    struct ASTNode *jp_op2_node = create_node_str(NODE_TYPE_EXPRESSION, NULL, label, (int)strlen(label));
     jp_node->children[0] = jp_op1_node;
     jp_node->children[1] = jp_op2_node;
     jp_node->children_count = 2;
@@ -330,7 +330,7 @@ static struct ASTNode *create_reverse_jr_cond_node(char *cond, int cond_size, ch
 static struct ASTNode *create_jp_node(char *label)
 {
     struct ASTNode *jp_node = create_node_str(NODE_TYPE_OP, NULL, "jp", 2);
-    struct ASTNode *jp_op1_node = create_node_str(NODE_TYPE_EXPRESSION, NULL, label, strlen(label));
+    struct ASTNode *jp_op1_node = create_node_str(NODE_TYPE_EXPRESSION, NULL, label, (int)strlen(label));
     jp_node->children[0] = jp_op1_node;
     jp_node->children_count = 1;
 
@@ -340,7 +340,7 @@ static struct ASTNode *create_jp_node(char *label)
 static struct ASTNode *create_jr_node(char *label)
 {
     struct ASTNode *jr_node = create_node_str(NODE_TYPE_OP, NULL, "jr", 2);
-    struct ASTNode *jr_op1_node = create_node_str(NODE_TYPE_EXPRESSION, NULL, label, strlen(label));
+    struct ASTNode *jr_op1_node = create_node_str(NODE_TYPE_EXPRESSION, NULL, label, (int)strlen(label));
     jr_node->children[0] = jr_op1_node;
     jr_node->children_count = 1;
 
@@ -568,7 +568,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 char *label1 = get_new_label();
                 struct ASTNode *jp_node = NULL;
                 char *label2 = get_new_label();
-                struct ASTNode *label2_node = create_node_str(NODE_TYPE_LABEL, NULL, label2, strlen(label2));
+                struct ASTNode *label2_node = create_node_str(NODE_TYPE_LABEL, NULL, label2, (int)strlen(label2));
                 struct ASTNode *jp2_node = NULL;
 
                 int inner_length = 0;
@@ -605,7 +605,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
 
                 assert(jp_node != NULL);
 
-                struct ASTNode *label1_node = create_node_str(NODE_TYPE_LABEL, NULL, label1, strlen(label1));
+                struct ASTNode *label1_node = create_node_str(NODE_TYPE_LABEL, NULL, label1, (int)strlen(label1));
 
                 struct ASTNode *last_node = current_node->children[1], *last_cur_node;
                 
@@ -681,7 +681,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 if (compile_op(jp_node, FALSE, &inner_length)) { return 1; }
                 *length += inner_length;
 
-                struct ASTNode *label1_node = create_node_str(NODE_TYPE_LABEL, NULL, label1, strlen(label1));
+                struct ASTNode *label1_node = create_node_str(NODE_TYPE_LABEL, NULL, label1, (int)strlen(label1));
                 struct ASTNode *new_node = create_node(NODE_TYPE_MAIN, NULL);                
 
                 struct ASTNode *last_node = current_node->children[1], *last_cur_node;
@@ -697,7 +697,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                     last_cur_node = last_cur_node->children[1];
                 }
 
-                struct ASTNode *label2_node = create_node_str(NODE_TYPE_LABEL, NULL, label2, strlen(label2));
+                struct ASTNode *label2_node = create_node_str(NODE_TYPE_LABEL, NULL, label2, (int)strlen(label2));
                 struct ASTNode *jp2_node = NULL;
                 
                 if (jr_in_loops && inner_while_length < 124)
@@ -756,7 +756,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 if (compile_op(jp_node, FALSE, &inner_length)) { return 1; }
                 *length += inner_length;
 
-                struct ASTNode *label1_node = create_node_str(NODE_TYPE_LABEL, NULL, label1, strlen(label1));
+                struct ASTNode *label1_node = create_node_str(NODE_TYPE_LABEL, NULL, label1, (int)strlen(label1));
 
                 struct ASTNode *last_node = current_node->children[1], *last_cur_node;
                 current_node->children[0] = label1_node;
@@ -770,7 +770,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 last_cur_node->children_count = 2;
                 last_cur_node->children[0] = jp_node;
                 
-                struct ASTNode *new_node = add_main_node_to_end(create_node_str(NODE_TYPE_LABEL, NULL, label2, strlen(label2)), last_cur_node);
+                struct ASTNode *new_node = add_main_node_to_end(create_node_str(NODE_TYPE_LABEL, NULL, label2, (int)strlen(label2)), last_cur_node);
                 new_node->children_count = 2;
                 new_node->children[1] = last_node;
 
@@ -804,7 +804,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 if (compile_op(jp_node, FALSE, &inner_length)) { return 1; }
                 *length += inner_length;
 
-                struct ASTNode *label1_node = create_node_str(NODE_TYPE_LABEL, NULL, label1, strlen(label1));
+                struct ASTNode *label1_node = create_node_str(NODE_TYPE_LABEL, NULL, label1, (int)strlen(label1));
 
                 struct ASTNode *last_node = current_node->children[1], *last_cur_node;
                 current_node->children[0] = label1_node;
@@ -818,7 +818,7 @@ static int recursive_first_pass(struct ASTNode *first_node, int *length)
                 last_cur_node->children_count = 2;
                 last_cur_node->children[0] = jp_node;
 
-                struct ASTNode *new_node = add_main_node_to_end(create_node_str(NODE_TYPE_LABEL, NULL, label2, strlen(label2)), last_cur_node);
+                struct ASTNode *new_node = add_main_node_to_end(create_node_str(NODE_TYPE_LABEL, NULL, label2, (int)strlen(label2)), last_cur_node);
                 new_node->children_count = 2;
                 new_node->children[1] = last_node;
 
@@ -1504,6 +1504,12 @@ static int second_pass(struct ASTNode *first_node)
                         return 1;
                     }
 
+                    if (file_size > UINT16_MAX)
+                    {
+                        write_compiler_error(node->filename, node->file_line, "Size of file \"%s\" is larger than the maximum value of a 16-bit number.", new_filename);
+                        return 1;
+                    }
+
                     if (node->str_size > 0)
                     {
                         add_data_symbol(node->str_value, node->str_size,
@@ -1513,16 +1519,16 @@ static int second_pass(struct ASTNode *first_node)
                     }
 
                     uint8_t byte_read;
-                    int bytes_read_count = fread(&byte_read, 1, 1, fp);
+                    int bytes_read_count = (int)fread(&byte_read, 1, 1, fp);
                     while (bytes_read_count)
                     {
                         add_output_element(byte_read, NULL);
-                        bytes_read_count = fread(&byte_read, 1, 1, fp);
+                        bytes_read_count = (int)fread(&byte_read, 1, 1, fp);
 
                         if (fp_list != NULL) fprint_db_list(fp_list, node, byte_read, NULL, FPRINT_DB_TYPE_BYTE);
                     }
 
-                    compiler_current_address += file_size;
+                    compiler_current_address += (uint16_t)file_size;
 
                     if (fp_list != NULL) fprint_db_list_end(fp_list);
 
@@ -1601,11 +1607,11 @@ static int second_pass(struct ASTNode *first_node)
                 }
 
                 uint8_t byte_read;
-                int bytes_read_count = fread(&byte_read, 1, 1, fp);
+                int bytes_read_count = (int)fread(&byte_read, 1, 1, fp);
                 while (bytes_read_count)
                 {
                     add_output_element(byte_read, NULL);
-                    bytes_read_count = fread(&byte_read, 1, 1, fp);
+                    bytes_read_count = (int)fread(&byte_read, 1, 1, fp);
                 }
 
                 break;
@@ -1684,7 +1690,7 @@ static int third_pass(struct ASTNode *node)
                 case NODE_TYPE_EXPRESSION_8:
                 {
                     if (resolve_expression(current_output_elem->node, &value)) return 1; 
-                    current_output_elem->value = value;
+                    current_output_elem->value = (uint8_t)value;
                     current_output_elem->node = NULL;
                     if (write_output_content) write_output_byte(current_output_elem->value);
                     break;
@@ -1693,7 +1699,7 @@ static int third_pass(struct ASTNode *node)
                 case NODE_TYPE_EXPRESSION_8_REL_CUR_ADDRESS:
                 {
                     if (resolve_expression(current_output_elem->node, &value)) return 1; 
-                    current_output_elem->value = (value-2);
+                    current_output_elem->value = (uint8_t)(value-2);
                     current_output_elem->node = NULL;
                     if (write_output_content) write_output_byte(current_output_elem->value);
                     break;
@@ -1740,7 +1746,7 @@ static int third_pass(struct ASTNode *node)
                     do {
                         if (value == current_node->num_value)
                         {
-                            current_output_elem->value = current_node->num_value2;
+                            current_output_elem->value = (uint8_t)current_node->num_value2;
                             current_output_elem->node = NULL;
 
                             if (write_output_content) write_output_byte(current_output_elem->value);

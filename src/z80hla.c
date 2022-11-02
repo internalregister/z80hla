@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
 				return 1;
 			}
 
-			add_define_identifier(argv[i], strlen(argv[i]));			
+			add_define_identifier(argv[i], (int)strlen(argv[i]));			
 		}
 		else if (!strcmp(argv[i], "-s") || !strcmp(argv[i], "--symbols"))
 		{
