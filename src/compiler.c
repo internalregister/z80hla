@@ -1522,7 +1522,7 @@ static int second_pass(struct ASTNode *first_node)
                     int bytes_read_count = (int)fread(&byte_read, 1, 1, fp);
                     while (bytes_read_count)
                     {
-                        add_output_element(byte_read, NULL);
+                        add_output_element_set_address(byte_read, NULL);
                         bytes_read_count = (int)fread(&byte_read, 1, 1, fp);
 
                         if (fp_list != NULL) fprint_db_list(fp_list, node, byte_read, NULL, FPRINT_DB_TYPE_BYTE);

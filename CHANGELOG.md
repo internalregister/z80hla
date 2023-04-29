@@ -1,5 +1,11 @@
 # Change Log
 
+## [1.4] - 2023-04-29
+
+### Fixed
+
+* Being able to print the correct current address after a _data_ _from_ statement
+
 ## [1.3] - 2022-11-01
  
 ### Added  
