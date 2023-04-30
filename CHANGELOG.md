@@ -5,6 +5,7 @@
 ### Fixed
 
 * Being able to print the correct current address after a _data_ _from_ statement
+* Listing with correct addresses in _data_ _from_ and _data_ of _struct_ statements
 
 ## [1.3] - 2022-11-01
  

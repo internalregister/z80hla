@@ -1446,8 +1446,8 @@ static int second_pass(struct ASTNode *first_node)
                                 {
                                     add_output_element_set_address(0, NULL);
                                     if (fp_list != NULL) fprint_db_list(fp_list, node, 0, NULL, FPRINT_DB_TYPE_BYTE);
+                                    compiler_current_address++;
                                 }
-                                compiler_current_address += structured_type->struct_size;
                             }    
                         }                    
                     }
@@ -1526,9 +1526,9 @@ static int second_pass(struct ASTNode *first_node)
                         bytes_read_count = (int)fread(&byte_read, 1, 1, fp);
 
                         if (fp_list != NULL) fprint_db_list(fp_list, node, byte_read, NULL, FPRINT_DB_TYPE_BYTE);
-                    }
 
-                    compiler_current_address += (uint16_t)file_size;
+                        compiler_current_address++;
+                    }
 
                     if (fp_list != NULL) fprint_db_list_end(fp_list);
 
