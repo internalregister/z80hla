@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2022, Sérgio Vieira <internalregister@gmail.com>
+    Copyright (c) 2023, Sérgio Vieira <internalregister@gmail.com>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -85,7 +85,7 @@ int main(int argc, char *argv[])
 	char *listing_filename = NULL;
 
 	printf("Z80 high-level assembler v"Z80HLA_VERSION_HI"."Z80HLA_VERSION_LO"\n");
-	printf("Copyright (C) Sérgio Vieira 2022 <internalregister@gmail.com>\n\n");
+	printf("Copyright (C) Sérgio Vieira 2023 <internalregister@gmail.com>\n\n");
 
 	if (argc == 1)
 	{

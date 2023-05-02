@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2022, Sérgio Vieira <internalregister@gmail.com>
+    Copyright (c) 2023, Sérgio Vieira <internalregister@gmail.com>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -3612,8 +3612,11 @@ int compile_op(struct ASTNode *node, BOOL add_to_output, int *length)
             {
                 add_output_element(0xF0, NULL);
                 struct ASTNode *exp_node = get_op_operand2_paren_number(node);
-                exp_node->type = NODE_TYPE_EXPRESSION_8;
-                add_output_element(0, exp_node);
+                exp_node->type = NODE_TYPE_EXPRESSION_16;
+                struct ASTNode *gb_node = create_node(NODE_TYPE_GB_IO_HI_RAM, NULL);
+                gb_node->children_count = 1;
+                gb_node->children[0] = exp_node;
+                add_output_element(0, gb_node);
             }
             *length = 2;
             return 0;
@@ -3625,8 +3628,11 @@ int compile_op(struct ASTNode *node, BOOL add_to_output, int *length)
             {
                 add_output_element(0xE0, NULL);
                 struct ASTNode *exp_node = get_op_operand1_paren_number(node);
-                exp_node->type = NODE_TYPE_EXPRESSION_8;
-                add_output_element(0, exp_node);
+                exp_node->type = NODE_TYPE_EXPRESSION_16;
+                struct ASTNode *gb_node = create_node(NODE_TYPE_GB_IO_HI_RAM, NULL);
+                gb_node->children_count = 1;
+                gb_node->children[0] = exp_node;
+                add_output_element(0, gb_node);
             }
             *length = 2;
             return 0;
@@ -3641,8 +3647,11 @@ int compile_op(struct ASTNode *node, BOOL add_to_output, int *length)
             {
                 add_output_element(0xF8, NULL);
                 struct ASTNode *exp_node = get_op_operand1_paren_number(node);
-                exp_node->type = NODE_TYPE_EXPRESSION_8;
-                add_output_element(0, exp_node);
+                exp_node->type = NODE_TYPE_EXPRESSION_16;
+                struct ASTNode *gb_node = create_node(NODE_TYPE_GB_IO_HI_RAM, NULL);
+                gb_node->children_count = 1;
+                gb_node->children[0] = exp_node;
+                add_output_element(0, gb_node);
             }
             *length = 2;
             return 0;

@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2022, Sérgio Vieira <internalregister@gmail.com>
+    Copyright (c) 2023, Sérgio Vieira <internalregister@gmail.com>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -235,7 +235,8 @@ enum NodeType
     NODE_TYPE_JRINLOOPS_OFF,
     NODE_TYPE_ARGUMENT,
     NODE_TYPE_CONTINUE,
-    NODE_TYPE_CONTINUEIF
+    NODE_TYPE_CONTINUEIF,
+    NODE_TYPE_GB_IO_HI_RAM
 };
 
 #define MAX_AST_NODE_CHILDREN   16

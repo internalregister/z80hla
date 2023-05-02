@@ -1,11 +1,16 @@
 # Change Log
 
-## [1.4] - 2023-04-29
+## [1.4] - 2023-05-02
+
+### Changed
+
+* `ldh` instruction now accepts values between 0x00 and 0xff and between 0xff00 and 0xffff
 
 ### Fixed
 
-* Being able to print the correct current address after a _data_ _from_ statement
-* Listing with correct addresses in _data_ _from_ and _data_ of _struct_ statements
+* Being able to print the correct current address after a `data` `from` statement
+* Listing with correct addresses in `data` `from` and `data` of a `struct` type statements
+* Some GB instructions were not being assembled
 
 ## [1.3] - 2022-11-01
  

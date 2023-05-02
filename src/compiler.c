@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2022, Sérgio Vieira <internalregister@gmail.com>
+    Copyright (c) 2023, Sérgio Vieira <internalregister@gmail.com>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -1759,6 +1759,18 @@ static int third_pass(struct ASTNode *node)
                         write_compiler_error(current_output_elem->node->children[1]->filename, current_output_elem->node->children[1]->file_line, "Invalid value %"PRId64"", value);
                         return 1;
                     }
+                    break;
+                }
+                case NODE_TYPE_GB_IO_HI_RAM:
+                {
+                    assert(current_output_elem->node->children_count == 1);
+                    if (resolve_expression(current_output_elem->node->children[0], &value)) return 1;
+                    if (!((value >= 0x0000 && value <= 0x00FF) || (value >= 0xFF00 && value <= 0xFFFF)))
+                    {
+                        write_compiler_error(current_output_elem->node->children[0]->filename, current_output_elem->node->children[0]->file_line, "Invalid value %"PRId64", it must be between 0 and 255 (0xff) or between 65280 (0xff00) and 65536 (0xffff)", value);
+                        return 1;
+                    }
+                    value &= 0xFF;
                     break;
                 }
                 case NODE_TYPE_PRINT:

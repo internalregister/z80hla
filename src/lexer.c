@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2022, Sérgio Vieira <internalregister@gmail.com>
+    Copyright (c) 2023, Sérgio Vieira <internalregister@gmail.com>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -250,7 +250,7 @@ static char *register_names[] = {
     "a", "b", "c", "d", "e", "h", "l", "f", "i", "r", "af", "bc", "de", "hl", "sp", "pc", "ix", "iy", "ixl", "ixh", "iyl", "iyh", "af'"
 };
 
-#define NUM_OPS 68
+#define NUM_OPS 75
 static char *op_names[] = {
     "nop", "adc", "add", "and", "bit", "call", "ccf", "cp", "cpd", "cpdr", "cpi", "cpir", "cpl", "daa", "dec", "di", "djnz", "ei", "ex", "exx", "halt", "im",
     "in", "inc", "ind", "indr", "ini", "inir", "jp", "jr", "ld", "ldd", "lddr", "ldi", "ldir", "neg", "or", "otdr", "otir", "out", "outd", "outi",

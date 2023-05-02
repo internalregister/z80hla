@@ -1,5 +1,5 @@
 /*
-    Copyright (c) 2022, Sérgio Vieira <internalregister@gmail.com>
+    Copyright (c) 2023, Sérgio Vieira <internalregister@gmail.com>
     All rights reserved.
 
     Redistribution and use in source and binary forms, with or without
@@ -224,7 +224,10 @@ char *node_type_names[] = {
     "NODE_TYPE_ASSEMBLEALL_OFF",
     "NODE_TYPE_JRINLOOPS_ON",
     "NODE_TYPE_JRINLOOPS_OFF",
-    "NODE_TYPE_ARGUMENT"
+    "NODE_TYPE_ARGUMENT",
+    "NODE_TYPE_CONTINUE",
+    "NODE_TYPE_CONTINUEIF",
+    "NODE_TYPE_GB_IO_HI_RAM"
 };
 
 void fprint_ast(FILE *fp, struct ASTNode *node)
