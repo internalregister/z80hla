@@ -1771,6 +1771,9 @@ static int third_pass(struct ASTNode *node)
                         return 1;
                     }
                     value &= 0xFF;
+                    current_output_elem->value = (uint8_t)value;
+                    current_output_elem->node = NULL;
+                    if (write_output_content) write_output_byte((uint8_t)value);
                     break;
                 }
                 case NODE_TYPE_PRINT:
